@@ -47,7 +47,6 @@ import org.apache.accumulo.core.security.TablePermission;
 import org.apache.accumulo.core.util.Pair;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -75,15 +74,6 @@ public class MiniAccumuloClusterTest {
     config.setSiteConfig(site);
     accumulo = new MiniAccumuloCluster(config);
     accumulo.start();
-  }
-
-  @Test
-  public void checkDFSConstants() {
-    // check for unexpected changes in static constants because these will be inlined
-    // and we won't otherwise know that they won't work on a particular version
-    assertEquals("dfs.namenode.name.dir", DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY);
-    assertEquals("dfs.datanode.data.dir", DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY);
-    assertEquals("dfs.replication", DFSConfigKeys.DFS_REPLICATION_KEY);
   }
 
   @Test(timeout = 30000)

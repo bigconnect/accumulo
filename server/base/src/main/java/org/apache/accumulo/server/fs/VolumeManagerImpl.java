@@ -16,18 +16,9 @@
  */
 package org.apache.accumulo.server.fs;
 
-import static java.util.Objects.requireNonNull;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.core.conf.DefaultConfiguration;
 import org.apache.accumulo.core.conf.Property;
@@ -43,23 +34,17 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.CreateFlag;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.hdfs.protocol.HdfsConstants.SafeModeAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import java.io.IOException;
+import java.net.URI;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static java.util.Objects.requireNonNull;
 
 public class VolumeManagerImpl implements VolumeManager {
 
@@ -203,37 +188,7 @@ public class VolumeManagerImpl implements VolumeManager {
 
   protected void ensureSyncIsEnabled() {
     for (Entry<String,Volume> entry : getFileSystems().entrySet()) {
-      FileSystem fs = entry.getValue().getFileSystem();
-
-      if (fs instanceof DistributedFileSystem) {
-        // Avoid use of DFSConfigKeys since it's private
-        final String DFS_SUPPORT_APPEND = "dfs.support.append",
-            DFS_DATANODE_SYNCONCLOSE = "dfs.datanode.synconclose";
-        final String ticketMessage = "See ACCUMULO-623 and ACCUMULO-1637 for more details.";
-
-        // If either of these parameters are configured to be false, fail.
-        // This is a sign that someone is writing bad configuration.
-        if (!fs.getConf().getBoolean(DFS_SUPPORT_APPEND, true)) {
-          String msg = "Accumulo requires that " + DFS_SUPPORT_APPEND
-              + " not be configured as false. " + ticketMessage;
-          // ACCUMULO-3651 Changed level to error and added FATAL to message for slf4j compatibility
-          log.error("FATAL {}", msg);
-          throw new RuntimeException(msg);
-        }
-
-        // Warn if synconclose isn't set
-        if (!fs.getConf().getBoolean(DFS_DATANODE_SYNCONCLOSE, false)) {
-          // Only warn once per process per volume URI
-          synchronized (WARNED_ABOUT_SYNCONCLOSE) {
-            if (!WARNED_ABOUT_SYNCONCLOSE.contains(entry.getKey())) {
-              WARNED_ABOUT_SYNCONCLOSE.add(entry.getKey());
-              log.warn(DFS_DATANODE_SYNCONCLOSE + " set to false in"
-                  + " hdfs-site.xml: data loss is possible on hard system reset or"
-                  + " power loss");
-            }
-          }
-        }
-      }
+      // TODO: Flavius - maybe check this for our filesystem
     }
   }
 
@@ -367,19 +322,7 @@ public class VolumeManagerImpl implements VolumeManager {
 
   @Override
   public boolean isReady() throws IOException {
-    for (Volume volume : getFileSystems().values()) {
-      final FileSystem fs = volume.getFileSystem();
-
-      if (!(fs instanceof DistributedFileSystem))
-        continue;
-
-      final DistributedFileSystem dfs = (DistributedFileSystem) fs;
-
-      // Returns true when safemode is on
-      if (dfs.setSafeMode(SafeModeAction.SAFEMODE_GET)) {
-        return false;
-      }
-    }
+    // TODO: Flavius - nothing to do here ?
     return true;
   }
 

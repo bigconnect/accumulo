@@ -43,7 +43,7 @@ public class VfsClassLoaderTest extends AccumuloDFSBase {
   @Before
   public void setup() throws Exception {
 
-    this.hdfs = cluster.getFileSystem();
+    this.hdfs = getFileSystem();
     this.hdfs.mkdirs(TEST_DIR);
 
     // Copy jar file to TEST_DIR

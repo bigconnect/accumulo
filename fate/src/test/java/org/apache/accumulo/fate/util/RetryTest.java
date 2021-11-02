@@ -41,251 +41,245 @@ import org.slf4j.Logger;
 
 public class RetryTest {
 
-  private Retry retry;
-  private static final long INITIAL_WAIT = 1000;
-  private static final long WAIT_INC = 1000;
-  private static final long MAX_RETRIES = 5;
-  private static final long LOG_INTERVAL = 1000;
-  private Retry unlimitedRetry;
-  private static final TimeUnit MS = MILLISECONDS;
+    private Retry retry;
+    private static final long INITIAL_WAIT = 1000;
+    private static final long WAIT_INC = 1000;
+    private static final long MAX_RETRIES = 5;
+    private static final long LOG_INTERVAL = 1000;
+    private Retry unlimitedRetry;
+    private static final TimeUnit MS = MILLISECONDS;
 
-  @Before
-  public void setup() {
-    retry = Retry.builder().maxRetries(MAX_RETRIES).retryAfter(INITIAL_WAIT, MS)
-        .incrementBy(WAIT_INC, MS).maxWait(MAX_RETRIES * WAIT_INC, MS).logInterval(LOG_INTERVAL, MS)
-        .createRetry();
-    unlimitedRetry =
-        Retry.builder().infiniteRetries().retryAfter(INITIAL_WAIT, MS).incrementBy(WAIT_INC, MS)
-            .maxWait(MAX_RETRIES * WAIT_INC, MS).logInterval(LOG_INTERVAL, MS).createRetry();
-  }
-
-  @Test
-  public void canRetryDoesntAlterState() {
-    for (int i = 0; i < MAX_RETRIES + 1; i++) {
-      assertTrue(retry.canRetry());
-    }
-  }
-
-  @Test
-  public void hasRetriedAfterUse() {
-    assertFalse(retry.hasRetried());
-    retry.useRetry();
-    assertTrue(retry.hasRetried());
-  }
-
-  @Test
-  public void retriesAreCompleted() {
-    for (int i = 0; i < MAX_RETRIES; i++) {
-      assertEquals(i, retry.retriesCompleted());
-      // canRetry doesn't alter retry's state
-      retry.canRetry();
-      assertEquals(i, retry.retriesCompleted());
-      // Using the retry will increase the internal count
-      retry.useRetry();
-      assertEquals(i + 1, retry.retriesCompleted());
-    }
-  }
-
-  @Test
-  public void usingNonExistentRetryFails() {
-    for (int i = 0; i < MAX_RETRIES; i++) {
-      assertTrue(retry.canRetry());
-      retry.useRetry();
-    }
-    assertFalse(retry.canRetry());
-    assertThrows("Calling useRetry when canRetry returns false throws an exception",
-        IllegalStateException.class, () -> retry.useRetry());
-  }
-
-  @Test
-  public void testWaitIncrement() throws InterruptedException {
-    retry = EasyMock.createMockBuilder(Retry.class).addMockedMethod("sleep").createStrictMock();
-    retry.setMaxRetries(MAX_RETRIES);
-    retry.setStartWait(INITIAL_WAIT);
-    retry.setWaitIncrement(WAIT_INC);
-    retry.setMaxWait(MAX_RETRIES * 1000);
-
-    long currentWait = INITIAL_WAIT;
-    for (int i = 1; i <= MAX_RETRIES; i++) {
-      retry.sleep(currentWait);
-      EasyMock.expectLastCall();
-      currentWait += WAIT_INC;
+    @Before
+    public void setup() {
+        retry = Retry.builder().maxRetries(MAX_RETRIES).retryAfter(INITIAL_WAIT, MS).incrementBy(WAIT_INC, MS)
+                .maxWait(MAX_RETRIES * WAIT_INC, MS).logInterval(LOG_INTERVAL, MS).createRetry();
+        unlimitedRetry = Retry.builder().infiniteRetries().retryAfter(INITIAL_WAIT, MS).incrementBy(WAIT_INC, MS)
+                .maxWait(MAX_RETRIES * WAIT_INC, MS).logInterval(LOG_INTERVAL, MS).createRetry();
     }
 
-    EasyMock.replay(retry);
-
-    while (retry.canRetry()) {
-      retry.useRetry();
-      retry.waitForNextAttempt();
+    @Test
+    public void canRetryDoesntAlterState() {
+        for (int i = 0; i < MAX_RETRIES + 1; i++) {
+            assertTrue(retry.canRetry());
+        }
     }
 
-    EasyMock.verify(retry);
-  }
-
-  @Test
-  public void testBoundedWaitIncrement() throws InterruptedException {
-    retry = EasyMock.createMockBuilder(Retry.class).addMockedMethod("sleep").createStrictMock();
-    retry.setMaxRetries(MAX_RETRIES);
-    retry.setStartWait(INITIAL_WAIT);
-    retry.setWaitIncrement(WAIT_INC);
-    // Make the last retry not increment in length
-    retry.setMaxWait((MAX_RETRIES - 1) * 1000);
-
-    long currentWait = INITIAL_WAIT;
-    for (int i = 1; i <= MAX_RETRIES; i++) {
-      retry.sleep(currentWait);
-      EasyMock.expectLastCall();
-      if (i < MAX_RETRIES - 1) {
-        currentWait += WAIT_INC;
-      }
+    @Test
+    public void hasRetriedAfterUse() {
+        assertFalse(retry.hasRetried());
+        retry.useRetry();
+        assertTrue(retry.hasRetried());
     }
 
-    EasyMock.replay(retry);
-
-    while (retry.canRetry()) {
-      retry.useRetry();
-      retry.waitForNextAttempt();
+    @Test
+    public void retriesAreCompleted() {
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            assertEquals(i, retry.retriesCompleted());
+            // canRetry doesn't alter retry's state
+            retry.canRetry();
+            assertEquals(i, retry.retriesCompleted());
+            // Using the retry will increase the internal count
+            retry.useRetry();
+            assertEquals(i + 1, retry.retriesCompleted());
+        }
     }
 
-    EasyMock.verify(retry);
-  }
-
-  @Test
-  public void testIsMaxRetryDisabled() {
-    assertFalse(retry.hasInfiniteRetries());
-    assertTrue(unlimitedRetry.hasInfiniteRetries());
-    assertEquals(-1, unlimitedRetry.getMaxRetries());
-  }
-
-  @Test
-  public void testUnlimitedRetry() {
-    for (int i = 0; i < Integer.MAX_VALUE; i++) {
-      assertTrue(unlimitedRetry.canRetry());
-      unlimitedRetry.useRetry();
-    }
-  }
-
-  @Test
-  public void testLogging() {
-    Logger testLogger = EasyMock.createMock(Logger.class);
-    EasyMock.expect(testLogger.isDebugEnabled()).andReturn(true);
-    testLogger.debug(EasyMock.anyObject(String.class));
-    EasyMock.expectLastCall().times(1);
-    EasyMock.expect(testLogger.isTraceEnabled()).andReturn(true).anyTimes();
-    testLogger.trace(EasyMock.anyObject(String.class));
-    EasyMock.expectLastCall().anyTimes();
-    testLogger.warn(EasyMock.anyObject(String.class));
-    EasyMock.expectLastCall().times(3, 5);
-    EasyMock.replay(testLogger);
-
-    // we want to do this for 5 second and observe the log messages
-    long start = System.currentTimeMillis();
-    long end = System.currentTimeMillis();
-    int i = 0;
-    for (; (end - start < 5000) && (i < Integer.MAX_VALUE); i++) {
-      unlimitedRetry.logRetry(testLogger, "failure message");
-      unlimitedRetry.useRetry();
-      end = System.currentTimeMillis();
+    @Test
+    public void usingNonExistentRetryFails() {
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            assertTrue(retry.canRetry());
+            retry.useRetry();
+        }
+        assertFalse(retry.canRetry());
+        assertThrows("Calling useRetry when canRetry returns false throws an exception", IllegalStateException.class,
+                () -> retry.useRetry());
     }
 
-    // now observe what log messages we got which should be around 5 +- 1
-    EasyMock.verify(testLogger);
-    assertTrue(i > 10);
+    @Test
+    public void testWaitIncrement() throws InterruptedException {
+        retry = EasyMock.createMockBuilder(Retry.class).addMockedMethod("sleep").createStrictMock();
+        retry.setMaxRetries(MAX_RETRIES);
+        retry.setStartWait(INITIAL_WAIT);
+        retry.setWaitIncrement(WAIT_INC);
+        retry.setMaxWait(MAX_RETRIES * 1000);
 
-  }
+        long currentWait = INITIAL_WAIT;
+        for (int i = 1; i <= MAX_RETRIES; i++) {
+            retry.sleep(currentWait);
+            EasyMock.expectLastCall();
+            currentWait += WAIT_INC;
+        }
 
-  @Test
-  public void testMaxRetries() {
-    NeedsRetries builder = Retry.builder();
-    builder.maxRetries(10);
-    builder.maxRetries(0);
-    assertThrows("Should not allow negative retries", IllegalArgumentException.class,
-        () -> builder.maxRetries(-1));
-  }
+        EasyMock.replay(retry);
 
-  @Test
-  public void testInitialWait() {
-    NeedsRetryDelay builder = Retry.builder().maxRetries(10);
-    builder.retryAfter(10, NANOSECONDS);
-    builder.retryAfter(10, MILLISECONDS);
-    builder.retryAfter(10, DAYS);
-    builder.retryAfter(0, NANOSECONDS);
-    builder.retryAfter(0, MILLISECONDS);
-    builder.retryAfter(0, DAYS);
+        while (retry.canRetry()) {
+            retry.useRetry();
+            retry.waitForNextAttempt();
+        }
 
-    assertThrows("Should not allow negative wait times", IllegalArgumentException.class,
-        () -> builder.retryAfter(-1, NANOSECONDS));
-  }
+        EasyMock.verify(retry);
+    }
 
-  @Test
-  public void testIncrementBy() {
-    NeedsTimeIncrement builder = Retry.builder().maxRetries(10).retryAfter(10, MILLISECONDS);
-    builder.incrementBy(10, DAYS);
-    builder.incrementBy(10, HOURS);
-    builder.incrementBy(10, NANOSECONDS);
-    builder.incrementBy(0, DAYS);
-    builder.incrementBy(0, HOURS);
-    builder.incrementBy(0, NANOSECONDS);
+    @Test
+    public void testBoundedWaitIncrement() throws InterruptedException {
+        retry = EasyMock.createMockBuilder(Retry.class).addMockedMethod("sleep").createStrictMock();
+        retry.setMaxRetries(MAX_RETRIES);
+        retry.setStartWait(INITIAL_WAIT);
+        retry.setWaitIncrement(WAIT_INC);
+        // Make the last retry not increment in length
+        retry.setMaxWait((MAX_RETRIES - 1) * 1000);
 
-    assertThrows("Should not allow negative increments", IllegalArgumentException.class,
-        () -> builder.incrementBy(-1, NANOSECONDS));
-  }
+        long currentWait = INITIAL_WAIT;
+        for (int i = 1; i <= MAX_RETRIES; i++) {
+            retry.sleep(currentWait);
+            EasyMock.expectLastCall();
+            if (i < MAX_RETRIES - 1) {
+                currentWait += WAIT_INC;
+            }
+        }
 
-  @Test
-  public void testMaxWait() {
-    NeedsMaxWait builder =
-        Retry.builder().maxRetries(10).retryAfter(15, MILLISECONDS).incrementBy(10, MILLISECONDS);
-    builder.maxWait(15, MILLISECONDS);
-    builder.maxWait(16, MILLISECONDS);
+        EasyMock.replay(retry);
 
-    assertThrows("Max wait time should be greater than or equal to initial wait time",
-        IllegalArgumentException.class, () -> builder.maxWait(14, MILLISECONDS));
-  }
+        while (retry.canRetry()) {
+            retry.useRetry();
+            retry.waitForNextAttempt();
+        }
 
-  @Test
-  public void testLogInterval() {
-    NeedsLogInterval builder = Retry.builder().maxRetries(10).retryAfter(15, MILLISECONDS)
-        .incrementBy(10, MILLISECONDS).maxWait(16, MINUTES);
-    builder.logInterval(10, DAYS);
-    builder.logInterval(10, HOURS);
-    builder.logInterval(10, NANOSECONDS);
-    builder.logInterval(0, DAYS);
-    builder.logInterval(0, HOURS);
-    builder.logInterval(0, NANOSECONDS);
+        EasyMock.verify(retry);
+    }
 
-    assertThrows("Log interval must not be negative", IllegalArgumentException.class,
-        () -> builder.logInterval(-1, NANOSECONDS));
-  }
+    @Test
+    public void testIsMaxRetryDisabled() {
+        assertFalse(retry.hasInfiniteRetries());
+        assertTrue(unlimitedRetry.hasInfiniteRetries());
+        assertEquals(-1, unlimitedRetry.getMaxRetries());
+    }
 
-  @Test
-  public void properArgumentsInRetry() {
-    long maxRetries = 10, startWait = 50L, maxWait = 5000L, waitIncrement = 500L,
-        logInterval = 10000L;
-    RetryFactory factory = Retry.builder().maxRetries(maxRetries).retryAfter(startWait, MS)
-        .incrementBy(waitIncrement, MS).maxWait(maxWait, MS).logInterval(logInterval, MS)
-        .createFactory();
-    Retry retry = factory.createRetry();
+    @Test
+    public void testUnlimitedRetry() {
+        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            assertTrue(unlimitedRetry.canRetry());
+            unlimitedRetry.useRetry();
+        }
+    }
 
-    assertEquals(maxRetries, retry.getMaxRetries());
-    assertEquals(startWait, retry.getCurrentWait());
-    assertEquals(maxWait, retry.getMaxWait());
-    assertEquals(waitIncrement, retry.getWaitIncrement());
-    assertEquals(logInterval, retry.getLogInterval());
-  }
+    @Test
+    public void testLogging() {
+        Logger testLogger = EasyMock.createMock(Logger.class);
+        EasyMock.expect(testLogger.isDebugEnabled()).andReturn(true);
+        testLogger.debug(EasyMock.anyObject(String.class));
+        EasyMock.expectLastCall().times(1);
+        EasyMock.expect(testLogger.isTraceEnabled()).andReturn(true).anyTimes();
+        testLogger.trace(EasyMock.anyObject(String.class));
+        EasyMock.expectLastCall().anyTimes();
+        testLogger.warn(EasyMock.anyObject(String.class));
+        EasyMock.expectLastCall().times(3, 5);
+        EasyMock.replay(testLogger);
 
-  @Test
-  public void properArgumentsInUnlimitedRetry() {
-    long startWait = 50L, maxWait = 5000L, waitIncrement = 500L, logInterval = 10000L;
-    RetryFactory factory =
-        Retry.builder().infiniteRetries().retryAfter(startWait, MS).incrementBy(waitIncrement, MS)
-            .maxWait(maxWait, MS).logInterval(logInterval, MS).createFactory();
-    Retry retry = factory.createRetry();
+        // we want to do this for 5 second and observe the log messages
+        long start = System.currentTimeMillis();
+        long end = System.currentTimeMillis();
+        int i = 0;
+        for (; (end - start < 5000) && (i < Integer.MAX_VALUE); i++) {
+            unlimitedRetry.logRetry(testLogger, "failure message");
+            unlimitedRetry.useRetry();
+            end = System.currentTimeMillis();
+        }
 
-    assertEquals(-1, retry.getMaxRetries());
-    assertEquals(startWait, retry.getCurrentWait());
-    assertEquals(maxWait, retry.getMaxWait());
-    assertEquals(waitIncrement, retry.getWaitIncrement());
-    assertEquals(logInterval, retry.getLogInterval());
-  }
+        // now observe what log messages we got which should be around 5 +- 1
+        EasyMock.verify(testLogger);
+        assertTrue(i > 10);
+
+    }
+
+    @Test
+    public void testMaxRetries() {
+        NeedsRetries builder = Retry.builder();
+        builder.maxRetries(10);
+        builder.maxRetries(0);
+        assertThrows("Should not allow negative retries", IllegalArgumentException.class, () -> builder.maxRetries(-1));
+    }
+
+    @Test
+    public void testInitialWait() {
+        NeedsRetryDelay builder = Retry.builder().maxRetries(10);
+        builder.retryAfter(10, NANOSECONDS);
+        builder.retryAfter(10, MILLISECONDS);
+        builder.retryAfter(10, DAYS);
+        builder.retryAfter(0, NANOSECONDS);
+        builder.retryAfter(0, MILLISECONDS);
+        builder.retryAfter(0, DAYS);
+
+        assertThrows("Should not allow negative wait times", IllegalArgumentException.class,
+                () -> builder.retryAfter(-1, NANOSECONDS));
+    }
+
+    @Test
+    public void testIncrementBy() {
+        NeedsTimeIncrement builder = Retry.builder().maxRetries(10).retryAfter(10, MILLISECONDS);
+        builder.incrementBy(10, DAYS);
+        builder.incrementBy(10, HOURS);
+        builder.incrementBy(10, NANOSECONDS);
+        builder.incrementBy(0, DAYS);
+        builder.incrementBy(0, HOURS);
+        builder.incrementBy(0, NANOSECONDS);
+
+        assertThrows("Should not allow negative increments", IllegalArgumentException.class,
+                () -> builder.incrementBy(-1, NANOSECONDS));
+    }
+
+    @Test
+    public void testMaxWait() {
+        NeedsMaxWait builder = Retry.builder().maxRetries(10).retryAfter(15, MILLISECONDS).incrementBy(10,
+                MILLISECONDS);
+        builder.maxWait(15, MILLISECONDS);
+        builder.maxWait(16, MILLISECONDS);
+
+        assertThrows("Max wait time should be greater than or equal to initial wait time",
+                IllegalArgumentException.class, () -> builder.maxWait(14, MILLISECONDS));
+    }
+
+    @Test
+    public void testLogInterval() {
+        NeedsLogInterval builder = Retry.builder().maxRetries(10).retryAfter(15, MILLISECONDS)
+                .incrementBy(10, MILLISECONDS).maxWait(16, MINUTES);
+        builder.logInterval(10, DAYS);
+        builder.logInterval(10, HOURS);
+        builder.logInterval(10, NANOSECONDS);
+        builder.logInterval(0, DAYS);
+        builder.logInterval(0, HOURS);
+        builder.logInterval(0, NANOSECONDS);
+
+        assertThrows("Log interval must not be negative", IllegalArgumentException.class,
+                () -> builder.logInterval(-1, NANOSECONDS));
+    }
+
+    @Test
+    public void properArgumentsInRetry() {
+        long maxRetries = 10, startWait = 50L, maxWait = 5000L, waitIncrement = 500L, logInterval = 10000L;
+        RetryFactory factory = Retry.builder().maxRetries(maxRetries).retryAfter(startWait, MS)
+                .incrementBy(waitIncrement, MS).maxWait(maxWait, MS).logInterval(logInterval, MS).createFactory();
+        Retry retry = factory.createRetry();
+
+        assertEquals(maxRetries, retry.getMaxRetries());
+        assertEquals(startWait, retry.getCurrentWait());
+        assertEquals(maxWait, retry.getMaxWait());
+        assertEquals(waitIncrement, retry.getWaitIncrement());
+        assertEquals(logInterval, retry.getLogInterval());
+    }
+
+    @Test
+    public void properArgumentsInUnlimitedRetry() {
+        long startWait = 50L, maxWait = 5000L, waitIncrement = 500L, logInterval = 10000L;
+        RetryFactory factory = Retry.builder().infiniteRetries().retryAfter(startWait, MS)
+                .incrementBy(waitIncrement, MS).maxWait(maxWait, MS).logInterval(logInterval, MS).createFactory();
+        Retry retry = factory.createRetry();
+
+        assertEquals(-1, retry.getMaxRetries());
+        assertEquals(startWait, retry.getCurrentWait());
+        assertEquals(maxWait, retry.getMaxWait());
+        assertEquals(waitIncrement, retry.getWaitIncrement());
+        assertEquals(logInterval, retry.getLogInterval());
+    }
 
 }

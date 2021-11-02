@@ -99,8 +99,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DFSConfigKeys;
-import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.thrift.TException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
@@ -182,7 +180,6 @@ public class MiniAccumuloClusterImpl implements AccumuloCluster {
   private List<LogWriter> logWriters = new ArrayList<>();
 
   private MiniAccumuloConfigImpl config;
-  private MiniDFSCluster miniDFS = null;
   private List<Process> cleanup = new ArrayList<>();
 
   private ExecutorService executor;
@@ -416,40 +413,7 @@ public class MiniAccumuloClusterImpl implements AccumuloCluster {
       mkdirs(config.getAccumuloDir());
     }
 
-    if (config.useMiniDFS()) {
-      File nn = new File(config.getAccumuloDir(), "nn");
-      mkdirs(nn);
-      File dn = new File(config.getAccumuloDir(), "dn");
-      mkdirs(dn);
-      File dfs = new File(config.getAccumuloDir(), "dfs");
-      mkdirs(dfs);
-      Configuration conf = new Configuration();
-      conf.set(DFSConfigKeys.DFS_NAMENODE_NAME_DIR_KEY, nn.getAbsolutePath());
-      conf.set(DFSConfigKeys.DFS_DATANODE_DATA_DIR_KEY, dn.getAbsolutePath());
-      conf.set(DFSConfigKeys.DFS_REPLICATION_KEY, "1");
-      conf.set(DFSConfigKeys.DFS_NAMENODE_REPLICATION_MIN_KEY, "1");
-      conf.set("dfs.support.append", "true");
-      conf.set("dfs.datanode.synconclose", "true");
-      conf.set("dfs.datanode.data.dir.perm", MiniDFSUtil.computeDatanodeDirectoryPermission());
-      String oldTestBuildData = System.setProperty("test.build.data", dfs.getAbsolutePath());
-      miniDFS = new MiniDFSCluster.Builder(conf).build();
-      if (oldTestBuildData == null)
-        System.clearProperty("test.build.data");
-      else
-        System.setProperty("test.build.data", oldTestBuildData);
-      miniDFS.waitClusterUp();
-      InetSocketAddress dfsAddress = miniDFS.getNameNode().getNameNodeAddress();
-      dfsUri = "hdfs://" + dfsAddress.getHostName() + ":" + dfsAddress.getPort();
-      File coreFile = new File(config.getConfDir(), "core-site.xml");
-      writeConfig(coreFile, Collections.singletonMap("fs.default.name", dfsUri).entrySet());
-      File hdfsFile = new File(config.getConfDir(), "hdfs-site.xml");
-      writeConfig(hdfsFile, conf);
-
-      Map<String,String> siteConfig = config.getSiteConfig();
-      siteConfig.put(Property.INSTANCE_DFS_URI.getKey(), dfsUri);
-      siteConfig.put(Property.INSTANCE_DFS_DIR.getKey(), "/accumulo");
-      config.setSiteConfig(siteConfig);
-    } else if (config.useExistingInstance()) {
+    if (config.useExistingInstance()) {
       dfsUri = CachedConfiguration.getInstance().get(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY);
     } else {
       dfsUri = "file:///";
@@ -526,10 +490,6 @@ public class MiniAccumuloClusterImpl implements AccumuloCluster {
    */
   @Override
   public synchronized void start() throws IOException, InterruptedException {
-    if (config.useMiniDFS() && miniDFS == null) {
-      throw new IllegalStateException("Cannot restart mini when using miniDFS");
-    }
-
     MiniAccumuloClusterControl control = getClusterControl();
 
     if (config.useExistingInstance()) {
@@ -759,13 +719,10 @@ public class MiniAccumuloClusterImpl implements AccumuloCluster {
       executor = null;
     }
 
-    if (config.useMiniDFS() && miniDFS != null)
-      miniDFS.shutdown();
     for (Process p : cleanup) {
       p.destroy();
       p.waitFor();
     }
-    miniDFS = null;
   }
 
   /**
@@ -851,10 +808,6 @@ public class MiniAccumuloClusterImpl implements AccumuloCluster {
     return stats;
   }
 
-  public synchronized MiniDFSCluster getMiniDfs() {
-    return this.miniDFS;
-  }
-
   @Override
   public MiniAccumuloClusterControl getClusterControl() {
     return clusterControl;
@@ -862,13 +815,9 @@ public class MiniAccumuloClusterImpl implements AccumuloCluster {
 
   @Override
   public Path getTemporaryPath() {
-    if (config.useMiniDFS()) {
-      return new Path("/tmp/");
-    } else {
-      File tmp = new File(config.getDir(), "tmp");
-      mkdirs(tmp);
-      return new Path(tmp.toString());
-    }
+    File tmp = new File(config.getDir(), "tmp");
+    mkdirs(tmp);
+    return new Path(tmp.toString());
   }
 
   @Override

@@ -79,8 +79,6 @@ public class MiniAccumuloConfigImpl {
   // TODO Nuke existingInstance and push it over to StandaloneAccumuloCluster
   private Boolean existingInstance = null;
 
-  private boolean useMiniDFS = false;
-
   private boolean useCredentialProvider = false;
 
   private String[] classpathItems = null;
@@ -532,20 +530,6 @@ public class MiniAccumuloConfigImpl {
   public MiniAccumuloConfigImpl setJDWPEnabled(boolean jdwpEnabled) {
     this.jdwpEnabled = jdwpEnabled;
     return this;
-  }
-
-  public boolean useMiniDFS() {
-    return useMiniDFS;
-  }
-
-  /**
-   * Configures this cluster to use miniDFS instead of the local {@link FileSystem}. Using this
-   * feature will not allow you to re-start {@link MiniAccumuloCluster} by calling
-   * {@link MiniAccumuloCluster#start()} after {@link MiniAccumuloCluster#stop()}, because the
-   * underlying miniDFS cannot be restarted.
-   */
-  public void useMiniDFS(boolean useMiniDFS) {
-    this.useMiniDFS = useMiniDFS;
   }
 
   /**

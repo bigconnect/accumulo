@@ -37,7 +37,6 @@ import org.apache.accumulo.minicluster.impl.MiniAccumuloConfigImpl;
 import org.apache.accumulo.minicluster.impl.ProcessReference;
 import org.apache.accumulo.test.categories.MiniClusterOnlyTests;
 import org.apache.accumulo.test.categories.PerformanceTests;
-import org.apache.accumulo.test.mrit.IntegrationTestMapReduce;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.junit.BeforeClass;
@@ -62,11 +61,6 @@ public class DurabilityIT extends ConfigurableMacBase {
   @Override
   protected int defaultTimeoutSeconds() {
     return 4 * 60;
-  }
-
-  @BeforeClass
-  static public void checkMR() {
-    assumeFalse(IntegrationTestMapReduce.isMapReduce());
   }
 
   static final long N = 100000;

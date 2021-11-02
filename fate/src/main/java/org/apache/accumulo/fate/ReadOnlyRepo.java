@@ -19,14 +19,14 @@ package org.apache.accumulo.fate;
 /**
  * Read only access to a repeatable persisted operation.
  *
- * By definition, these methods are safe to call without impacting the state of FATE. They should
- * also be safe to call without impacting the state of system components.
+ * By definition, these methods are safe to call without impacting the state of FATE. They should also be safe to call
+ * without impacting the state of system components.
  *
  */
 public interface ReadOnlyRepo<T> {
 
-  long isReady(long tid, T environment) throws Exception;
+    long isReady(long tid, T environment) throws Exception;
 
-  String getDescription();
+    String getDescription();
 
 }

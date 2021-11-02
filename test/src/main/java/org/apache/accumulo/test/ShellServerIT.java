@@ -16,37 +16,12 @@
  */
 package org.apache.accumulo.test;
 
-import static org.apache.accumulo.fate.util.UtilWaitThread.sleepUninterruptibly;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
+import jline.console.ConsoleReader;
 import org.apache.accumulo.core.Constants;
-import org.apache.accumulo.core.client.ClientConfiguration;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.TableNotFoundException;
+import org.apache.accumulo.core.client.*;
 import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.client.impl.Namespaces;
 import org.apache.accumulo.core.client.sample.RowSampler;
@@ -77,23 +52,19 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.tools.DistCp;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
+import java.io.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
-import jline.console.ConsoleReader;
+import static org.apache.accumulo.fate.util.UtilWaitThread.sleepUninterruptibly;
+import static org.junit.Assert.*;
 
 @Category({MiniClusterOnlyTests.class, SunnyDayTests.class})
 public class ShellServerIT extends SharedMiniClusterBase {
@@ -278,7 +249,6 @@ public class ShellServerIT extends SharedMiniClusterBase {
 
     // history file is updated in $HOME
     System.setProperty("HOME", rootPath);
-    System.setProperty("hadoop.tmp.dir", System.getProperty("user.dir") + "/target/hadoop-tmp");
 
     traceProcess = getCluster().exec(TraceServer.class);
 
@@ -330,81 +300,60 @@ public class ShellServerIT extends SharedMiniClusterBase {
     return 60;
   }
 
-  @Test
-  public void exporttableImporttable() throws Exception {
-    final String table = name.getMethodName(), table2 = table + "2";
-
-    // exporttable / importtable
-    ts.exec("createtable " + table + " -evc", true);
-    make10();
-    ts.exec("addsplits row5", true);
-    ts.exec("config -t " + table + " -s table.split.threshold=345M", true);
-    ts.exec("offline " + table, true);
-    File exportDir = new File(rootPath, "ShellServerIT.export");
-    String exportUri = "file://" + exportDir.toString();
-    String localTmp = "file://" + new File(rootPath, "ShellServerIT.tmp").toString();
-    ts.exec("exporttable -t " + table + " " + exportUri, true);
-    DistCp cp = newDistCp(new Configuration(false));
-    String import_ = "file://" + new File(rootPath, "ShellServerIT.import").toString();
-    if (getCluster().getClientConfig().hasSasl()) {
-      // DistCp bugs out trying to get a fs delegation token to perform the cp. Just copy it
-      // ourselves by hand.
-      FileSystem fs = getCluster().getFileSystem();
-      FileSystem localFs = FileSystem.getLocal(new Configuration(false));
-
-      // Path on local fs to cp into
-      Path localTmpPath = new Path(localTmp);
-      localFs.mkdirs(localTmpPath);
-
-      // Path in remote fs to importtable from
-      Path importDir = new Path(import_);
-      fs.mkdirs(importDir);
-
-      // Implement a poor-man's DistCp
-      try (BufferedReader reader =
-          new BufferedReader(new FileReader(new File(exportDir, "distcp.txt")))) {
-        for (String line; (line = reader.readLine()) != null;) {
-          Path exportedFile = new Path(line);
-          // There isn't a cp on FileSystem??
-          log.info("Copying " + line + " to " + localTmpPath);
-          fs.copyToLocalFile(exportedFile, localTmpPath);
-          Path tmpFile = new Path(localTmpPath, exportedFile.getName());
-          log.info("Moving " + tmpFile + " to the import directory " + importDir);
-          fs.moveFromLocalFile(tmpFile, importDir);
-        }
-      }
-    } else {
-      String[] distCpArgs = new String[] {"-f", exportUri + "/distcp.txt", import_};
-      assertEquals("Failed to run distcp: " + Arrays.toString(distCpArgs), 0, cp.run(distCpArgs));
-    }
-    ts.exec("importtable " + table2 + " " + import_, true);
-    ts.exec("config -t " + table2 + " -np", true, "345M", true);
-    ts.exec("getsplits -t " + table2, true, "row5", true);
-    ts.exec("constraint --list -t " + table2, true, "VisibilityConstraint=2", true);
-    ts.exec("online " + table, true);
-    ts.exec("deletetable -f " + table, true);
-    ts.exec("deletetable -f " + table2, true);
-  }
-
-  private DistCp newDistCp(Configuration conf) {
-    try {
-      @SuppressWarnings("unchecked")
-      Constructor<DistCp>[] constructors = (Constructor<DistCp>[]) DistCp.class.getConstructors();
-      for (Constructor<DistCp> constructor : constructors) {
-        Class<?>[] parameterTypes = constructor.getParameterTypes();
-        if (parameterTypes.length > 0 && parameterTypes[0].equals(Configuration.class)) {
-          if (parameterTypes.length == 1) {
-            return constructor.newInstance(conf);
-          } else if (parameterTypes.length == 2) {
-            return constructor.newInstance(conf, null);
-          }
-        }
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    throw new RuntimeException("Unexpected constructors for DistCp");
-  }
+//  @Test
+//  public void exporttableImporttable() throws Exception {
+//    final String table = name.getMethodName(), table2 = table + "2";
+//
+//    // exporttable / importtable
+//    ts.exec("createtable " + table + " -evc", true);
+//    make10();
+//    ts.exec("addsplits row5", true);
+//    ts.exec("config -t " + table + " -s table.split.threshold=345M", true);
+//    ts.exec("offline " + table, true);
+//    File exportDir = new File(rootPath, "ShellServerIT.export");
+//    String exportUri = "file://" + exportDir.toString();
+//    String localTmp = "file://" + new File(rootPath, "ShellServerIT.tmp").toString();
+//    ts.exec("exporttable -t " + table + " " + exportUri, true);
+//    String import_ = "file://" + new File(rootPath, "ShellServerIT.import").toString();
+//    if (getCluster().getClientConfig().hasSasl()) {
+//      // DistCp bugs out trying to get a fs delegation token to perform the cp. Just copy it
+//      // ourselves by hand.
+//      FileSystem fs = getCluster().getFileSystem();
+//      FileSystem localFs = FileSystem.getLocal(new Configuration(false));
+//
+//      // Path on local fs to cp into
+//      Path localTmpPath = new Path(localTmp);
+//      localFs.mkdirs(localTmpPath);
+//
+//      // Path in remote fs to importtable from
+//      Path importDir = new Path(import_);
+//      fs.mkdirs(importDir);
+//
+//      // Implement a poor-man's DistCp
+//      try (BufferedReader reader =
+//          new BufferedReader(new FileReader(new File(exportDir, "distcp.txt")))) {
+//        for (String line; (line = reader.readLine()) != null;) {
+//          Path exportedFile = new Path(line);
+//          // There isn't a cp on FileSystem??
+//          log.info("Copying " + line + " to " + localTmpPath);
+//          fs.copyToLocalFile(exportedFile, localTmpPath);
+//          Path tmpFile = new Path(localTmpPath, exportedFile.getName());
+//          log.info("Moving " + tmpFile + " to the import directory " + importDir);
+//          fs.moveFromLocalFile(tmpFile, importDir);
+//        }
+//      }
+//    } else {
+//      String[] distCpArgs = new String[] {"-f", exportUri + "/distcp.txt", import_};
+//      assertEquals("Failed to run distcp: " + Arrays.toString(distCpArgs), 0, cp.run(distCpArgs));
+//    }
+//    ts.exec("importtable " + table2 + " " + import_, true);
+//    ts.exec("config -t " + table2 + " -np", true, "345M", true);
+//    ts.exec("getsplits -t " + table2, true, "row5", true);
+//    ts.exec("constraint --list -t " + table2, true, "VisibilityConstraint=2", true);
+//    ts.exec("online " + table, true);
+//    ts.exec("deletetable -f " + table, true);
+//    ts.exec("deletetable -f " + table2, true);
+//  }
 
   @Test
   public void setscaniterDeletescaniter() throws Exception {

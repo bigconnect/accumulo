@@ -16,11 +16,6 @@
  */
 package org.apache.accumulo.start.test;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-
-import org.apache.accumulo.start.classloader.vfs.MiniDFSUtil;
 import org.apache.commons.vfs2.CacheStrategy;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.cache.DefaultFilesCache;
@@ -30,16 +25,19 @@ import org.apache.commons.vfs2.impl.DefaultFileSystemManager;
 import org.apache.commons.vfs2.impl.FileContentInfoFilenameFactory;
 import org.apache.commons.vfs2.provider.hdfs.HdfsFileProvider;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hdfs.DFSConfigKeys;
-import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.junit.AfterClass;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.junit.BeforeClass;
+
+import java.io.File;
+import java.net.URI;
 
 public class AccumuloDFSBase {
 
   protected static Configuration conf = null;
   protected static DefaultFileSystemManager vfs = null;
-  protected static MiniDFSCluster cluster = null;
+  protected static FileSystem fs = null;
 
   private static URI HDFS_URI;
 
@@ -50,9 +48,6 @@ public class AccumuloDFSBase {
   @BeforeClass
   public static void miniDfsClusterSetup() {
     System.setProperty("java.io.tmpdir", System.getProperty("user.dir") + "/target");
-    // System.setProperty("org.apache.commons.logging.Log",
-    // "org.apache.commons.logging.impl.NoOpLog");
-    // Logger.getRootLogger().setLevel(Level.ERROR);
 
     // Put the MiniDFSCluster directory in the target directory
     System.setProperty("test.build.data", "target/build/test/data");
@@ -61,18 +56,9 @@ public class AccumuloDFSBase {
     conf = new Configuration();
     conf.set("hadoop.security.token.service.use_ip", "true");
 
-    conf.set("dfs.datanode.data.dir.perm", MiniDFSUtil.computeDatanodeDirectoryPermission());
-    conf.setLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY, 1024 * 1024); // 1M blocksize
-
-    try {
-      cluster = new MiniDFSCluster.Builder(conf).build();
-      cluster.waitClusterUp();
-      // We can't assume that the hostname of "localhost" will still be "localhost" after
-      // starting up the NameNode. We may get mapped into a FQDN via settings in /etc/hosts.
-      HDFS_URI = cluster.getFileSystem().getUri();
-    } catch (IOException e) {
-      throw new RuntimeException("Error setting up mini cluster", e);
-    }
+    fs = new RawLocalFileSystem();
+    fs.setWorkingDirectory(new Path("target/build/test/data"));
+    HDFS_URI = fs.getUri();
 
     // Set up the VFS
     vfs = new DefaultFileSystemManager();
@@ -119,14 +105,9 @@ public class AccumuloDFSBase {
     } catch (FileSystemException e) {
       throw new RuntimeException("Error setting up VFS", e);
     }
-
   }
 
-  @AfterClass
-  public static void tearDownMiniDfsCluster() {
-    if (null != cluster) {
-      cluster.shutdown();
-    }
+  public static FileSystem getFileSystem() {
+    return fs;
   }
-
 }

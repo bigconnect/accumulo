@@ -16,25 +16,14 @@
  */
 package org.apache.accumulo.core.conf;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -175,40 +164,6 @@ public class CredentialProviderFactoryShimTest {
 
     assertArrayEquals(credential,
         CredentialProviderFactoryShim.getValueFromCredentialProvider(conf, alias));
-  }
-
-  @Test
-  public void extractFromHdfs() throws Exception {
-    File target = new File(System.getProperty("user.dir"), "target");
-    String prevValue = System.setProperty("test.build.data",
-        new File(target, this.getClass().getName() + "_minidfs").toString());
-    MiniDFSCluster dfsCluster = new MiniDFSCluster.Builder(new Configuration()).build();
-    try {
-      if (null != prevValue) {
-        System.setProperty("test.build.data", prevValue);
-      } else {
-        System.clearProperty("test.build.data");
-      }
-
-      // One namenode, One configuration
-      Configuration dfsConfiguration = dfsCluster.getConfiguration(0);
-      Path destPath = new Path("/accumulo.jceks");
-      FileSystem dfs = dfsCluster.getFileSystem();
-      // Put the populated keystore in hdfs
-      dfs.copyFromLocalFile(new Path(populatedKeyStore.toURI()), destPath);
-
-      Configuration cpConf = CredentialProviderFactoryShim.getConfiguration(dfsConfiguration,
-          "jceks://hdfs/accumulo.jceks");
-
-      // The values in the keystore
-      Map<String,String> expectations = new HashMap<>();
-      expectations.put("key1", "value1");
-      expectations.put("key2", "value2");
-
-      checkCredentialProviders(cpConf, expectations);
-    } finally {
-      dfsCluster.shutdown();
-    }
   }
 
   @Test

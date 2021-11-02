@@ -43,7 +43,7 @@ import org.apache.accumulo.server.ServerConstants;
 import org.apache.accumulo.server.fs.VolumeManager.FileType;
 import org.apache.accumulo.server.fs.VolumeUtil;
 import org.apache.accumulo.server.log.SortedLogState;
-import org.apache.accumulo.server.master.recovery.HadoopLogCloser;
+import org.apache.accumulo.server.master.recovery.GenericLogCloser;
 import org.apache.accumulo.server.master.recovery.LogCloser;
 import org.apache.accumulo.server.master.recovery.RecoveryPath;
 import org.apache.accumulo.server.zookeeper.DistributedWorkQueue;
@@ -211,7 +211,7 @@ public class RecoveryManager {
           if (!closeTasksQueued.contains(sortId) && !sortsQueued.contains(sortId)) {
             AccumuloConfiguration aconf = master.getConfiguration();
             LogCloser closer = aconf.instantiateClassProperty(
-                Property.MASTER_WALOG_CLOSER_IMPLEMETATION, LogCloser.class, new HadoopLogCloser());
+                Property.MASTER_WALOG_CLOSER_IMPLEMETATION, LogCloser.class, new GenericLogCloser());
             Long delay = recoveryDelay.get(sortId);
             if (delay == null) {
               delay = aconf.getTimeInMillis(Property.MASTER_RECOVERY_DELAY);

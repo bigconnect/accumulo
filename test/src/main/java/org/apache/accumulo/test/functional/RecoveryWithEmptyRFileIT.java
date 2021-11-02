@@ -60,11 +60,6 @@ public class RecoveryWithEmptyRFileIT extends ConfigurableMacBase {
     return 2 * 60;
   }
 
-  @Override
-  public void configure(MiniAccumuloConfigImpl cfg, Configuration hadoopCoreSite) {
-    cfg.useMiniDFS(true);
-  }
-
   @Test
   public void replaceMissingRFile() throws Exception {
     log.info("Ingest some data, verify it was stored properly, replace an"

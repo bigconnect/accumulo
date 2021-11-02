@@ -25,58 +25,59 @@ import org.apache.zookeeper.Watcher;
  * A factory for {@link ZooCache} instances.
  */
 public class ZooCacheFactory {
-  // TODO: make this better - LRU, soft references, ...
-  private static Map<String,ZooCache> instances = new HashMap<>();
+    // TODO: make this better - LRU, soft references, ...
+    private static Map<String, ZooCache> instances = new HashMap<>();
 
-  /**
-   * Gets a {@link ZooCache}. The same object may be returned for multiple calls with the same
-   * arguments.
-   *
-   * @param zooKeepers
-   *          comma-seprated list of ZooKeeper host[:port]s
-   * @param sessionTimeout
-   *          session timeout
-   * @return cache object
-   */
-  public ZooCache getZooCache(String zooKeepers, int sessionTimeout) {
-    String key = zooKeepers + ":" + sessionTimeout;
-    synchronized (instances) {
-      ZooCache zc = instances.get(key);
-      if (zc == null) {
-        zc = new ZooCache(zooKeepers, sessionTimeout);
-        instances.put(key, zc);
-      }
-      return zc;
+    /**
+     * Gets a {@link ZooCache}. The same object may be returned for multiple calls with the same arguments.
+     *
+     * @param zooKeepers
+     *            comma-seprated list of ZooKeeper host[:port]s
+     * @param sessionTimeout
+     *            session timeout
+     * 
+     * @return cache object
+     */
+    public ZooCache getZooCache(String zooKeepers, int sessionTimeout) {
+        String key = zooKeepers + ":" + sessionTimeout;
+        synchronized (instances) {
+            ZooCache zc = instances.get(key);
+            if (zc == null) {
+                zc = new ZooCache(zooKeepers, sessionTimeout);
+                instances.put(key, zc);
+            }
+            return zc;
+        }
     }
-  }
 
-  /**
-   * Gets a watched {@link ZooCache}. If the watcher is null, then the same (unwatched) object may
-   * be returned for multiple calls with the same remaining arguments.
-   *
-   * @param zooKeepers
-   *          comma-seprated list of ZooKeeper host[:port]s
-   * @param sessionTimeout
-   *          session timeout
-   * @param watcher
-   *          watcher (optional)
-   * @return cache object
-   */
-  public ZooCache getZooCache(String zooKeepers, int sessionTimeout, Watcher watcher) {
-    if (watcher == null) {
-      // reuse
-      return getZooCache(zooKeepers, sessionTimeout);
+    /**
+     * Gets a watched {@link ZooCache}. If the watcher is null, then the same (unwatched) object may be returned for
+     * multiple calls with the same remaining arguments.
+     *
+     * @param zooKeepers
+     *            comma-seprated list of ZooKeeper host[:port]s
+     * @param sessionTimeout
+     *            session timeout
+     * @param watcher
+     *            watcher (optional)
+     * 
+     * @return cache object
+     */
+    public ZooCache getZooCache(String zooKeepers, int sessionTimeout, Watcher watcher) {
+        if (watcher == null) {
+            // reuse
+            return getZooCache(zooKeepers, sessionTimeout);
+        }
+        return new ZooCache(zooKeepers, sessionTimeout, watcher);
     }
-    return new ZooCache(zooKeepers, sessionTimeout, watcher);
-  }
 
-  /**
-   * Resets the factory. All cached objects are flushed.
-   */
-  void reset() {
-    synchronized (instances) {
-      instances.clear();
+    /**
+     * Resets the factory. All cached objects are flushed.
+     */
+    void reset() {
+        synchronized (instances) {
+            instances.clear();
+        }
     }
-  }
 
 }

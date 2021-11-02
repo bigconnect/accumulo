@@ -21,56 +21,56 @@ import java.io.Serializable;
 /**
  * Transaction Store: a place to save transactions
  *
- * A transaction consists of a number of operations. To use, first create a transaction id, and then
- * seed the transaction with an initial operation. An executor service can then execute the
- * transaction's operation, possibly pushing more operations onto the transaction as each step
- * successfully completes. If a step fails, the stack can be unwound, undoing each operation.
+ * A transaction consists of a number of operations. To use, first create a transaction id, and then seed the
+ * transaction with an initial operation. An executor service can then execute the transaction's operation, possibly
+ * pushing more operations onto the transaction as each step successfully completes. If a step fails, the stack can be
+ * unwound, undoing each operation.
  */
 public interface TStore<T> extends ReadOnlyTStore<T> {
 
-  /**
-   * Create a new transaction id
-   *
-   * @return a transaction id
-   */
-  long create();
+    /**
+     * Create a new transaction id
+     *
+     * @return a transaction id
+     */
+    long create();
 
-  @Override
-  Repo<T> top(long tid);
+    @Override
+    Repo<T> top(long tid);
 
-  /**
-   * Update the given transaction with the next operation
-   *
-   * @param tid
-   *          the transaction id
-   * @param repo
-   *          the operation
-   */
-  void push(long tid, Repo<T> repo) throws StackOverflowException;
+    /**
+     * Update the given transaction with the next operation
+     *
+     * @param tid
+     *            the transaction id
+     * @param repo
+     *            the operation
+     */
+    void push(long tid, Repo<T> repo) throws StackOverflowException;
 
-  /**
-   * Remove the last pushed operation from the given transaction.
-   */
-  void pop(long tid);
+    /**
+     * Remove the last pushed operation from the given transaction.
+     */
+    void pop(long tid);
 
-  /**
-   * Update the state of a given transaction
-   *
-   * @param tid
-   *          transaction id
-   * @param status
-   *          execution status
-   */
-  void setStatus(long tid, TStatus status);
+    /**
+     * Update the state of a given transaction
+     *
+     * @param tid
+     *            transaction id
+     * @param status
+     *            execution status
+     */
+    void setStatus(long tid, TStatus status);
 
-  void setProperty(long tid, String prop, Serializable val);
+    void setProperty(long tid, String prop, Serializable val);
 
-  /**
-   * Remove the transaction from the store.
-   *
-   * @param tid
-   *          the transaction id
-   */
-  void delete(long tid);
+    /**
+     * Remove the transaction from the store.
+     *
+     * @param tid
+     *            the transaction id
+     */
+    void delete(long tid);
 
 }

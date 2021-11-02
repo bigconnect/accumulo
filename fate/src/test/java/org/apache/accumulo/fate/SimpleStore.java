@@ -32,102 +32,102 @@ import org.apache.commons.lang.NotImplementedException;
  */
 public class SimpleStore<T> implements TStore<T> {
 
-  private long nextId = 1;
-  private Map<Long,TStatus> statuses = new HashMap<>();
-  private Set<Long> reserved = new HashSet<>();
+    private long nextId = 1;
+    private Map<Long, TStatus> statuses = new HashMap<>();
+    private Set<Long> reserved = new HashSet<>();
 
-  @Override
-  public long create() {
-    statuses.put(nextId, TStatus.NEW);
-    return nextId++;
-  }
-
-  @Override
-  public long reserve() {
-    throw new NotImplementedException();
-  }
-
-  @Override
-  public void reserve(long tid) {
-    if (reserved.contains(tid))
-      throw new IllegalStateException(); // zoo store would wait, but do not expect test to reserve
-                                         // twice... if test change, then change this
-    reserved.add(tid);
-  }
-
-  @Override
-  public void unreserve(long tid, long deferTime) {
-    if (!reserved.remove(tid)) {
-      throw new IllegalStateException();
+    @Override
+    public long create() {
+        statuses.put(nextId, TStatus.NEW);
+        return nextId++;
     }
-  }
 
-  @Override
-  public Repo<T> top(long tid) {
-    throw new NotImplementedException();
-  }
+    @Override
+    public long reserve() {
+        throw new NotImplementedException();
+    }
 
-  @Override
-  public void push(long tid, Repo<T> repo) throws StackOverflowException {
-    throw new NotImplementedException();
-  }
+    @Override
+    public void reserve(long tid) {
+        if (reserved.contains(tid))
+            throw new IllegalStateException(); // zoo store would wait, but do not expect test to reserve
+                                               // twice... if test change, then change this
+        reserved.add(tid);
+    }
 
-  @Override
-  public void pop(long tid) {
-    throw new NotImplementedException();
-  }
+    @Override
+    public void unreserve(long tid, long deferTime) {
+        if (!reserved.remove(tid)) {
+            throw new IllegalStateException();
+        }
+    }
 
-  @Override
-  public org.apache.accumulo.fate.TStore.TStatus getStatus(long tid) {
-    if (!reserved.contains(tid))
-      throw new IllegalStateException();
+    @Override
+    public Repo<T> top(long tid) {
+        throw new NotImplementedException();
+    }
 
-    TStatus status = statuses.get(tid);
-    if (status == null)
-      return TStatus.UNKNOWN;
-    return status;
-  }
+    @Override
+    public void push(long tid, Repo<T> repo) throws StackOverflowException {
+        throw new NotImplementedException();
+    }
 
-  @Override
-  public void setStatus(long tid, org.apache.accumulo.fate.TStore.TStatus status) {
-    if (!reserved.contains(tid))
-      throw new IllegalStateException();
-    if (!statuses.containsKey(tid))
-      throw new IllegalStateException();
-    statuses.put(tid, status);
-  }
+    @Override
+    public void pop(long tid) {
+        throw new NotImplementedException();
+    }
 
-  @Override
-  public org.apache.accumulo.fate.TStore.TStatus waitForStatusChange(long tid,
-      EnumSet<org.apache.accumulo.fate.TStore.TStatus> expected) {
-    throw new NotImplementedException();
-  }
+    @Override
+    public org.apache.accumulo.fate.TStore.TStatus getStatus(long tid) {
+        if (!reserved.contains(tid))
+            throw new IllegalStateException();
 
-  @Override
-  public void setProperty(long tid, String prop, Serializable val) {
-    throw new NotImplementedException();
-  }
+        TStatus status = statuses.get(tid);
+        if (status == null)
+            return TStatus.UNKNOWN;
+        return status;
+    }
 
-  @Override
-  public Serializable getProperty(long tid, String prop) {
-    throw new NotImplementedException();
-  }
+    @Override
+    public void setStatus(long tid, org.apache.accumulo.fate.TStore.TStatus status) {
+        if (!reserved.contains(tid))
+            throw new IllegalStateException();
+        if (!statuses.containsKey(tid))
+            throw new IllegalStateException();
+        statuses.put(tid, status);
+    }
 
-  @Override
-  public void delete(long tid) {
-    if (!reserved.contains(tid))
-      throw new IllegalStateException();
-    statuses.remove(tid);
-  }
+    @Override
+    public org.apache.accumulo.fate.TStore.TStatus waitForStatusChange(long tid,
+            EnumSet<org.apache.accumulo.fate.TStore.TStatus> expected) {
+        throw new NotImplementedException();
+    }
 
-  @Override
-  public List<Long> list() {
-    return new ArrayList<>(statuses.keySet());
-  }
+    @Override
+    public void setProperty(long tid, String prop, Serializable val) {
+        throw new NotImplementedException();
+    }
 
-  @Override
-  public List<ReadOnlyRepo<T>> getStack(long tid) {
-    throw new NotImplementedException();
-  }
+    @Override
+    public Serializable getProperty(long tid, String prop) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void delete(long tid) {
+        if (!reserved.contains(tid))
+            throw new IllegalStateException();
+        statuses.remove(tid);
+    }
+
+    @Override
+    public List<Long> list() {
+        return new ArrayList<>(statuses.keySet());
+    }
+
+    @Override
+    public List<ReadOnlyRepo<T>> getStack(long tid) {
+        throw new NotImplementedException();
+    }
 
 }

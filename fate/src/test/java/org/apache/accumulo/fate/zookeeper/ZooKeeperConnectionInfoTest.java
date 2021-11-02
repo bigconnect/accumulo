@@ -23,11 +23,11 @@ import org.junit.Test;
 
 public class ZooKeeperConnectionInfoTest {
 
-  @Test
-  public void testEquality() {
-    assertEquals(new ZooKeeperConnectionInfo("localhost:2181", 60000, null, null),
-        new ZooKeeperConnectionInfo("localhost:2181", 60000, null, null));
-    assertEquals(new ZooKeeperConnectionInfo("localhost:2181", 60000, null, null).hashCode(),
-        new ZooKeeperConnectionInfo("localhost:2181", 60000, null, null).hashCode());
-  }
+    @Test
+    public void testEquality() {
+        assertEquals(new ZooKeeperConnectionInfo("localhost:2181", 60000, null, null),
+                new ZooKeeperConnectionInfo("localhost:2181", 60000, null, null));
+        assertEquals(new ZooKeeperConnectionInfo("localhost:2181", 60000, null, null).hashCode(),
+                new ZooKeeperConnectionInfo("localhost:2181", 60000, null, null).hashCode());
+    }
 }

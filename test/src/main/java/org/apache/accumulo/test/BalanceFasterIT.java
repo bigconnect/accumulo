@@ -39,7 +39,6 @@ import org.apache.accumulo.minicluster.impl.MiniAccumuloConfigImpl;
 import org.apache.accumulo.test.categories.MiniClusterOnlyTests;
 import org.apache.accumulo.test.categories.PerformanceTests;
 import org.apache.accumulo.test.functional.ConfigurableMacBase;
-import org.apache.accumulo.test.mrit.IntegrationTestMapReduce;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.junit.BeforeClass;
@@ -58,11 +57,6 @@ public class BalanceFasterIT extends ConfigurableMacBase {
   @Override
   protected int defaultTimeoutSeconds() {
     return 90;
-  }
-
-  @BeforeClass
-  static public void checkMR() {
-    assumeFalse(IntegrationTestMapReduce.isMapReduce());
   }
 
   @Test

@@ -30,129 +30,129 @@ import org.junit.Test;
 
 public class TransactionWatcherTest {
 
-  static class SimpleArbitrator implements TransactionWatcher.Arbitrator {
-    Map<String,List<Long>> started = new HashMap<>();
-    Map<String,List<Long>> cleanedUp = new HashMap<>();
+    static class SimpleArbitrator implements TransactionWatcher.Arbitrator {
+        Map<String, List<Long>> started = new HashMap<>();
+        Map<String, List<Long>> cleanedUp = new HashMap<>();
 
-    public synchronized void start(String txType, Long txid) throws Exception {
-      List<Long> txids = started.get(txType);
-      if (txids == null)
-        txids = new ArrayList<>();
-      if (txids.contains(txid))
-        throw new Exception("transaction already started");
-      txids.add(txid);
-      started.put(txType, txids);
+        public synchronized void start(String txType, Long txid) throws Exception {
+            List<Long> txids = started.get(txType);
+            if (txids == null)
+                txids = new ArrayList<>();
+            if (txids.contains(txid))
+                throw new Exception("transaction already started");
+            txids.add(txid);
+            started.put(txType, txids);
 
-      txids = cleanedUp.get(txType);
-      if (txids == null)
-        txids = new ArrayList<>();
-      if (txids.contains(txid))
-        throw new IllegalStateException("transaction was started but not cleaned up");
-      txids.add(txid);
-      cleanedUp.put(txType, txids);
-    }
-
-    public synchronized void stop(String txType, Long txid) throws Exception {
-      List<Long> txids = started.get(txType);
-      if (txids != null && txids.contains(txid)) {
-        txids.remove(txids.indexOf(txid));
-        return;
-      }
-      throw new Exception("transaction does not exist");
-    }
-
-    public synchronized void cleanup(String txType, Long txid) throws Exception {
-      List<Long> txids = cleanedUp.get(txType);
-      if (txids != null && txids.contains(txid)) {
-        txids.remove(txids.indexOf(txid));
-        return;
-      }
-      throw new Exception("transaction does not exist");
-    }
-
-    @Override
-    synchronized public boolean transactionAlive(String txType, long tid) throws Exception {
-      List<Long> txids = started.get(txType);
-      if (txids == null)
-        return false;
-      return txids.contains(tid);
-    }
-
-    @Override
-    public boolean transactionComplete(String txType, long tid) throws Exception {
-      List<Long> txids = cleanedUp.get(txType);
-      if (txids == null)
-        return true;
-      return !txids.contains(tid);
-    }
-
-  }
-
-  @Test
-  public void testTransactionWatcher() throws Exception {
-    final String txType = "someName";
-    final long txid = 7;
-    final SimpleArbitrator sa = new SimpleArbitrator();
-    final TransactionWatcher txw = new TransactionWatcher(sa);
-    sa.start(txType, txid);
-    try {
-      sa.start(txType, txid);
-      fail("simple arbitrator did not throw an exception");
-    } catch (Exception ex) {
-      // expected
-    }
-    txw.isActive(txid);
-    assertFalse(txw.isActive(txid));
-    txw.run(txType, txid, new Callable<Object>() {
-      @Override
-      public Object call() throws Exception {
-        assertTrue(txw.isActive(txid));
-        return null;
-      }
-    });
-    assertFalse(txw.isActive(txid));
-    assertFalse(sa.transactionComplete(txType, txid));
-    sa.stop(txType, txid);
-    assertFalse(sa.transactionAlive(txType, txid));
-    assertFalse(sa.transactionComplete(txType, txid));
-    sa.cleanup(txType, txid);
-    assertTrue(sa.transactionComplete(txType, txid));
-    try {
-      txw.run(txType, txid, new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          fail("Should not be able to start a new work on a discontinued transaction");
-          return null;
+            txids = cleanedUp.get(txType);
+            if (txids == null)
+                txids = new ArrayList<>();
+            if (txids.contains(txid))
+                throw new IllegalStateException("transaction was started but not cleaned up");
+            txids.add(txid);
+            cleanedUp.put(txType, txids);
         }
-      });
-      fail("work against stopped transaction should fail");
-    } catch (Exception ex) {
+
+        public synchronized void stop(String txType, Long txid) throws Exception {
+            List<Long> txids = started.get(txType);
+            if (txids != null && txids.contains(txid)) {
+                txids.remove(txids.indexOf(txid));
+                return;
+            }
+            throw new Exception("transaction does not exist");
+        }
+
+        public synchronized void cleanup(String txType, Long txid) throws Exception {
+            List<Long> txids = cleanedUp.get(txType);
+            if (txids != null && txids.contains(txid)) {
+                txids.remove(txids.indexOf(txid));
+                return;
+            }
+            throw new Exception("transaction does not exist");
+        }
+
+        @Override
+        synchronized public boolean transactionAlive(String txType, long tid) throws Exception {
+            List<Long> txids = started.get(txType);
+            if (txids == null)
+                return false;
+            return txids.contains(tid);
+        }
+
+        @Override
+        public boolean transactionComplete(String txType, long tid) throws Exception {
+            List<Long> txids = cleanedUp.get(txType);
+            if (txids == null)
+                return true;
+            return !txids.contains(tid);
+        }
 
     }
-    final long txid2 = 9;
-    sa.start(txType, txid2);
-    txw.run(txType, txid2, new Callable<Object>() {
-      @Override
-      public Object call() throws Exception {
-        assertTrue(txw.isActive(txid2));
-        sa.stop(txType, txid2);
+
+    @Test
+    public void testTransactionWatcher() throws Exception {
+        final String txType = "someName";
+        final long txid = 7;
+        final SimpleArbitrator sa = new SimpleArbitrator();
+        final TransactionWatcher txw = new TransactionWatcher(sa);
+        sa.start(txType, txid);
         try {
-          txw.run(txType, txid2, new Callable<Object>() {
+            sa.start(txType, txid);
+            fail("simple arbitrator did not throw an exception");
+        } catch (Exception ex) {
+            // expected
+        }
+        txw.isActive(txid);
+        assertFalse(txw.isActive(txid));
+        txw.run(txType, txid, new Callable<Object>() {
             @Override
             public Object call() throws Exception {
-              fail("Should not be able to start a new work on a discontinued transaction");
-              return null;
+                assertTrue(txw.isActive(txid));
+                return null;
             }
-          });
-          fail("work against a stopped transaction should fail");
+        });
+        assertFalse(txw.isActive(txid));
+        assertFalse(sa.transactionComplete(txType, txid));
+        sa.stop(txType, txid);
+        assertFalse(sa.transactionAlive(txType, txid));
+        assertFalse(sa.transactionComplete(txType, txid));
+        sa.cleanup(txType, txid);
+        assertTrue(sa.transactionComplete(txType, txid));
+        try {
+            txw.run(txType, txid, new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    fail("Should not be able to start a new work on a discontinued transaction");
+                    return null;
+                }
+            });
+            fail("work against stopped transaction should fail");
         } catch (Exception ex) {
-          // expected
-        }
-        assertTrue(txw.isActive(txid2));
-        return null;
-      }
-    });
 
-  }
+        }
+        final long txid2 = 9;
+        sa.start(txType, txid2);
+        txw.run(txType, txid2, new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                assertTrue(txw.isActive(txid2));
+                sa.stop(txType, txid2);
+                try {
+                    txw.run(txType, txid2, new Callable<Object>() {
+                        @Override
+                        public Object call() throws Exception {
+                            fail("Should not be able to start a new work on a discontinued transaction");
+                            return null;
+                        }
+                    });
+                    fail("work against a stopped transaction should fail");
+                } catch (Exception ex) {
+                    // expected
+                }
+                assertTrue(txw.isActive(txid2));
+                return null;
+            }
+        });
+
+    }
 
 }

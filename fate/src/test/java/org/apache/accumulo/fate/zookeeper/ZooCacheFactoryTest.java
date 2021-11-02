@@ -27,63 +27,63 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ZooCacheFactoryTest {
-  private ZooCacheFactory zcf;
+    private ZooCacheFactory zcf;
 
-  @Before
-  public void setUp() {
-    zcf = new ZooCacheFactory();
-  }
+    @Before
+    public void setUp() {
+        zcf = new ZooCacheFactory();
+    }
 
-  @After
-  public void tearDown() {
-    zcf.reset();
-  }
+    @After
+    public void tearDown() {
+        zcf.reset();
+    }
 
-  @Test
-  public void testGetZooCache() {
-    String zks1 = "zk1";
-    int timeout1 = 1000;
-    ZooCache zc1 = zcf.getZooCache(zks1, timeout1);
-    ZooCache zc1a = zcf.getZooCache(zks1, timeout1);
-    assertSame(zc1, zc1a);
+    @Test
+    public void testGetZooCache() {
+        String zks1 = "zk1";
+        int timeout1 = 1000;
+        ZooCache zc1 = zcf.getZooCache(zks1, timeout1);
+        ZooCache zc1a = zcf.getZooCache(zks1, timeout1);
+        assertSame(zc1, zc1a);
 
-    String zks2 = "zk2";
-    int timeout2 = 1000;
-    ZooCache zc2 = zcf.getZooCache(zks2, timeout2);
-    assertNotSame(zc1, zc2);
+        String zks2 = "zk2";
+        int timeout2 = 1000;
+        ZooCache zc2 = zcf.getZooCache(zks2, timeout2);
+        assertNotSame(zc1, zc2);
 
-    String zks3 = "zk1";
-    int timeout3 = 2000;
-    ZooCache zc3 = zcf.getZooCache(zks3, timeout3);
-    assertNotSame(zc1, zc3);
-  }
+        String zks3 = "zk1";
+        int timeout3 = 2000;
+        ZooCache zc3 = zcf.getZooCache(zks3, timeout3);
+        assertNotSame(zc1, zc3);
+    }
 
-  @Test
-  public void testGetZooCacheWatcher() {
-    String zks1 = "zk1";
-    int timeout1 = 1000;
-    Watcher watcher = createMock(Watcher.class);
-    ZooCache zc1 = zcf.getZooCache(zks1, timeout1, watcher);
-    assertNotNull(zc1);
-  }
+    @Test
+    public void testGetZooCacheWatcher() {
+        String zks1 = "zk1";
+        int timeout1 = 1000;
+        Watcher watcher = createMock(Watcher.class);
+        ZooCache zc1 = zcf.getZooCache(zks1, timeout1, watcher);
+        assertNotNull(zc1);
+    }
 
-  @Test
-  public void testGetZooCacheWatcher_Null() {
-    String zks1 = "zk1";
-    int timeout1 = 1000;
-    ZooCache zc1 = zcf.getZooCache(zks1, timeout1, null);
-    assertNotNull(zc1);
-    ZooCache zc1a = zcf.getZooCache(zks1, timeout1);
-    assertSame(zc1, zc1a);
-  }
+    @Test
+    public void testGetZooCacheWatcher_Null() {
+        String zks1 = "zk1";
+        int timeout1 = 1000;
+        ZooCache zc1 = zcf.getZooCache(zks1, timeout1, null);
+        assertNotNull(zc1);
+        ZooCache zc1a = zcf.getZooCache(zks1, timeout1);
+        assertSame(zc1, zc1a);
+    }
 
-  @Test
-  public void testReset() {
-    String zks1 = "zk1";
-    int timeout1 = 1000;
-    ZooCache zc1 = zcf.getZooCache(zks1, timeout1);
-    zcf.reset();
-    ZooCache zc1a = zcf.getZooCache(zks1, timeout1);
-    assertNotSame(zc1, zc1a);
-  }
+    @Test
+    public void testReset() {
+        String zks1 = "zk1";
+        int timeout1 = 1000;
+        ZooCache zc1 = zcf.getZooCache(zks1, timeout1);
+        zcf.reset();
+        ZooCache zc1a = zcf.getZooCache(zks1, timeout1);
+        assertNotSame(zc1, zc1a);
+    }
 }

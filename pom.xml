@@ -27,63 +27,12 @@
   <version>1.10.1</version>
   <packaging>pom</packaging>
   <name>Apache Accumulo Project</name>
-  <description>Apache Accumulo is a sorted, distributed key/value store based
-    on Google's BigTable design. It is built on top of Apache Hadoop,
-    Zookeeper, and Thrift. It features a few novel improvements on the BigTable
-    design in the form of cell-level access labels and a server-side
-    programming mechanism that can modify key/value pairs at various points in
-    the data management process.</description>
-  <!-- this URL is where the site derived via the maven-site-plugin ends up,
-       not the generic site; currently not used -->
-  <url>https://accumulo.apache.org</url>
-  <!-- this is the year of inception at ASF -->
-  <inceptionYear>2011</inceptionYear>
-  <organization>
-    <name>The Apache Software Foundation</name>
-    <url>https://www.apache.org</url>
-  </organization>
-  <licenses>
-    <license>
-      <name>Apache License, Version 2.0</name>
-      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-    </license>
-  </licenses>
-  <mailingLists>
-    <mailingList>
-      <name>User</name>
-      <subscribe>user-subscribe@accumulo.apache.org</subscribe>
-      <unsubscribe>user-unsubscribe@accumulo.apache.org</unsubscribe>
-      <post>user@accumulo.apache.org</post>
-      <archive>https://lists.apache.org/list.html?user@accumulo.apache.org</archive>
-    </mailingList>
-    <mailingList>
-      <name>Dev</name>
-      <subscribe>dev-subscribe@accumulo.apache.org</subscribe>
-      <unsubscribe>dev-unsubscribe@accumulo.apache.org</unsubscribe>
-      <post>dev@accumulo.apache.org</post>
-      <archive>https://lists.apache.org/list.html?dev@accumulo.apache.org</archive>
-    </mailingList>
-    <mailingList>
-      <name>Commits</name>
-      <subscribe>commits-subscribe@accumulo.apache.org</subscribe>
-      <unsubscribe>commits-unsubscribe@accumulo.apache.org</unsubscribe>
-      <archive>https://lists.apache.org/list.html?commits@accumulo.apache.org</archive>
-    </mailingList>
-    <mailingList>
-      <name>Notifications</name>
-      <subscribe>notifications-subscribe@accumulo.apache.org</subscribe>
-      <unsubscribe>notifications-unsubscribe@accumulo.apache.org</unsubscribe>
-      <archive>https://lists.apache.org/list.html?notifications@accumulo.apache.org</archive>
-    </mailingList>
-  </mailingLists>
   <modules>
     <module>assemble</module>
     <module>core</module>
-    <module>docs</module>
-    <module>examples/simple</module>
     <module>fate</module>
     <module>iterator-test-harness</module>
-    <module>maven-plugin</module>
+<!--    <module>maven-plugin</module>-->
     <module>minicluster</module>
     <module>proxy</module>
     <module>server/base</module>
@@ -98,20 +47,6 @@
     <module>test</module>
     <module>trace</module>
   </modules>
-  <scm>
-    <connection>scm:git:https://gitbox.apache.org/repos/asf/accumulo.git</connection>
-    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/accumulo.git</developerConnection>
-    <tag>rel/1.10.1</tag>
-    <url>https://gitbox.apache.org/repos/asf?p=accumulo.git</url>
-  </scm>
-  <issueManagement>
-    <system>GitHub Issues</system>
-    <url>https://github.com/apache/accumulo/issues</url>
-  </issueManagement>
-  <ciManagement>
-    <system>GitHub Actions</system>
-    <url>https://github.com/apache/accumulo/actions</url>
-  </ciManagement>
   <properties>
     <!-- used for filtering the java source with the current version -->
     <accumulo.release.version>${project.version}</accumulo.release.version>
@@ -120,13 +55,12 @@
     <!-- Curator version -->
     <curator.version>2.11.0</curator.version>
     <!-- relative path for Eclipse format; should override in child modules if necessary -->
-    <eclipseFormatterStyle>${project.parent.basedir}/contrib/Eclipse-Accumulo-Codestyle.xml</eclipseFormatterStyle>
     <failsafe.excludedGroups />
     <failsafe.forkCount>1</failsafe.forkCount>
     <failsafe.groups />
     <!-- version that works when building with Hadoop 2 or 3.0; use 27.0-jre for 3.1 and later -->
     <guava.version>14.0.1</guava.version>
-    <hadoop.version>2.6.5</hadoop.version>
+    <hadoop.version>2.10.1</hadoop.version>
     <htrace.hadoop.version>4.1.0-incubating</htrace.hadoop.version>
     <htrace.version>3.1.0-incubating</htrace.version>
     <it.failIfNoSpecifiedTests>false</it.failIfNoSpecifiedTests>
@@ -387,43 +321,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-client</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-client-api</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-client-minicluster</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-client-runtime</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-distcp</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-minicluster</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-minikdc</artifactId>
-        <!-- this version works better with java 11 than Hadoop 2 versions -->
-        <version>3.0.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-tools</artifactId>
+        <artifactId>hadoop-common</artifactId>
         <version>${hadoop.version}</version>
       </dependency>
       <dependency>
@@ -646,7 +544,9 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
           <configuration>
+            <forceJavacCompilerUse>true</forceJavacCompilerUse>
             <optimize>true</optimize>
             <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
@@ -750,40 +650,6 @@
           <version>1.2.0</version>
         </plugin>
         <plugin>
-          <groupId>net.revelc.code.formatter</groupId>
-          <artifactId>formatter-maven-plugin</artifactId>
-          <version>2.12.2</version>
-          <configuration>
-            <configFile>${eclipseFormatterStyle}</configFile>
-            <compilerCompliance>${maven.compiler.source}</compilerCompliance>
-            <compilerSource>${maven.compiler.source}</compilerSource>
-            <compilerTargetPlatform>${maven.compiler.target}</compilerTargetPlatform>
-            <excludes>
-              <exclude>**/thrift/*.java</exclude>
-              <exclude>**/proto/*.java</exclude>
-            </excludes>
-            <lineEnding>LF</lineEnding>
-            <overrideConfigCompilerVersion>true</overrideConfigCompilerVersion>
-            <skipJsFormatting>true</skipJsFormatting>
-            <skipHtmlFormatting>true</skipHtmlFormatting>
-            <skipXmlFormatting>true</skipXmlFormatting>
-            <skipJsonFormatting>true</skipJsonFormatting>
-            <skipCssFormatting>true</skipCssFormatting>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.rat</groupId>
-          <artifactId>apache-rat-plugin</artifactId>
-          <configuration>
-            <excludes combine.children="append">
-              <exclude>src/main/resources/META-INF/services/*</exclude>
-              <exclude>nbproject/**</exclude>
-              <exclude>nb-configuration.xml</exclude>
-              <exclude>nbactions.xml</exclude>
-            </excludes>
-          </configuration>
-        </plugin>
-        <plugin>
           <groupId>net.revelc.code</groupId>
           <artifactId>warbucks-maven-plugin</artifactId>
           <version>1.1.2</version>
@@ -857,22 +723,6 @@
               </rules>
             </configuration>
           </execution>
-          <execution>
-            <id>enforce-hadoop-profile</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireProperty>
-                  <property>hadoop.profile</property>
-                  <regex>(2|3)</regex>
-                  <regexMessage>You should specify the Hadoop profile by major Hadoop generation, i.e. 2 or 3, not by a version number.
-    Use hadoop.version to use a particular Hadoop version within that generation.</regexMessage>
-                </requireProperty>
-              </rules>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -889,112 +739,8 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <checkstyleRules>
-            <module name="Checker">
-              <property name="charset" value="UTF-8" />
-              <property name="severity" value="warning" />
-              <!-- Checks for whitespace                               -->
-              <!-- See http://checkstyle.sf.net/config_whitespace.html -->
-              <module name="FileTabCharacter" />
-              <module name="TreeWalker">
-                <module name="OneTopLevelClass" />
-                <module name="RegexpSinglelineJava">
-                  <property name="format" value="\s+$" />
-                  <property name="message" value="Line has trailing whitespace." />
-                </module>
-                <module name="RegexpSinglelineJava">
-                  <property name="format" value="[@]see\s+[{][@]link" />
-                  <property name="message" value="Javadoc @see does not need @link: pick one or the other." />
-                </module>
-                <module name="RegexpSinglelineJava">
-                  <property name="format" value="jline[.]internal[.]Preconditions" />
-                  <property name="message" value="Please use Guava Preconditions not JLine" />
-                </module>
-                <module name="RegexpSinglelineJava">
-                  <property name="format" value="org[.]apache[.]commons[.]math[.]" />
-                  <property name="message" value="Use commons-math3 (org.apache.commons.math3.*)" />
-                </module>
-                <module name="RegexpSinglelineJava">
-                  <property name="format" value="junit[.]framework[.]TestCase" />
-                  <property name="message" value="Use JUnit4+ @Test annotation instead of TestCase" />
-                </module>
-                <module name="RegexpSinglelineJava">
-                  <property name="format" value="import org[.]junit[.]Assert;" />
-                  <property name="message" value="Use static imports for Assert.* methods for consistency" />
-                </module>
-                <module name="OuterTypeFilename" />
-                <module name="AvoidStarImport" />
-                <module name="NoLineWrap" />
-                <module name="LeftCurly" />
-                <module name="RightCurly">
-                  <property name="option" value="alone" />
-                  <property name="tokens" value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT, INSTANCE_INIT" />
-                </module>
-                <module name="SeparatorWrap">
-                  <property name="tokens" value="DOT" />
-                  <property name="option" value="nl" />
-                </module>
-                <module name="SeparatorWrap">
-                  <property name="tokens" value="COMMA" />
-                  <property name="option" value="EOL" />
-                </module>
-                <module name="PackageName">
-                  <property name="format" value="^[a-z]+(\.[a-z][a-zA-Z0-9]*)*$" />
-                </module>
-                <module name="MethodTypeParameterName">
-                  <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)" />
-                </module>
-                <module name="NonEmptyAtclauseDescription" />
-                <module name="JavadocMethod">
-                  <property name="allowMissingJavadoc" value="true" />
-                  <property name="allowMissingParamTags" value="true" />
-                  <property name="allowMissingThrowsTags" value="true" />
-                  <property name="allowMissingReturnTag" value="true" />
-                  <property name="allowedAnnotations" value="Override,Test,BeforeClass,AfterClass,Before,After" />
-                  <property name="allowThrowsTagsForSubclasses" value="true" />
-                </module>
-                <module name="MissingOverrideCheck" />
-              </module>
-            </module>
-          </checkstyleRules>
-          <violationSeverity>warning</violationSeverity>
-          <includeTestSourceDirectory>true</includeTestSourceDirectory>
-          <excludes>**/thrift/*.java,**/proto/*.java,**/HelpMojo.java</excludes>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>com.puppycrawl.tools</groupId>
-            <artifactId>checkstyle</artifactId>
-            <version>8.18</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>check-style</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>com.github.koraktor</groupId>
-        <artifactId>mavanagaiata</artifactId>
-        <executions>
-          <execution>
-            <id>git-commit</id>
-            <goals>
-              <goal>commit</goal>
-            </goals>
-            <phase>validate</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.0.0-M5</version>
         <executions>
           <execution>
             <id>run-integration-tests</id>
@@ -1011,18 +757,6 @@
         <executions>
           <execution>
             <id>run-spotbugs</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>check-licenses</id>
             <goals>
               <goal>check</goal>
             </goals>
@@ -1080,177 +814,6 @@
       </properties>
     </profile>
     <profile>
-      <id>m2e</id>
-      <activation>
-        <property>
-          <name>m2e.version</name>
-        </property>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-            <plugin>
-              <groupId>org.eclipse.m2e</groupId>
-              <artifactId>lifecycle-mapping</artifactId>
-              <version>1.0.0</version>
-              <configuration>
-                <lifecycleMappingMetadata>
-                  <pluginExecutions>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-plugin-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>helpmojo</goal>
-                          <goal>descriptor</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.gaul</groupId>
-                        <artifactId>modernizer-maven-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>modernizer</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-checkstyle-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>check</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>copy-dependencies</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-remote-resources-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>process</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.apache.rat</groupId>
-                        <artifactId>apache-rat-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>check</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>exec</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>enforce</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-invoker-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>install</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>com.github.ekryd.sortpom</groupId>
-                        <artifactId>sortpom-maven-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>sort</goal>
-                          <goal>verify</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>com.github.koraktor</groupId>
-                        <artifactId>mavanagaiata</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>commit</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                  </pluginExecutions>
-                </lifecycleMappingMetadata>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
-    <profile>
       <id>accumulo-release</id>
       <properties>
         <!-- some properties to make the release build a bit faster -->
@@ -1300,18 +863,6 @@
                   <goal>sort</goal>
                 </goals>
                 <phase>process-sources</phase>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>net.revelc.code.formatter</groupId>
-            <artifactId>formatter-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>format-java-source</id>
-                <goals>
-                  <goal>format</goal>
-                </goals>
               </execution>
             </executions>
           </plugin>
@@ -1372,31 +923,6 @@
       </activation>
       <properties>
         <spotbugs.excludeFilterFile>src/main/spotbugs/exclude-filter.xml</spotbugs.excludeFilterFile>
-      </properties>
-    </profile>
-    <!-- Active by default, build against Hadoop 2 -->
-    <profile>
-      <id>hadoop-default</id>
-      <activation>
-        <property>
-          <name>!hadoop.profile</name>
-        </property>
-      </activation>
-      <properties>
-        <hadoop.profile>2</hadoop.profile>
-      </properties>
-    </profile>
-    <!-- Build against hadoop 3 explicitly -->
-    <profile>
-      <id>hadoop3</id>
-      <activation>
-        <property>
-          <name>hadoop.profile</name>
-          <value>3</value>
-        </property>
-      </activation>
-      <properties>
-        <hadoop.version>3.0.3</hadoop.version>
       </properties>
     </profile>
     <profile>

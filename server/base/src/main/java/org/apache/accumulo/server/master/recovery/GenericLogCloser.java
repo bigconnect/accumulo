@@ -16,8 +16,6 @@
  */
 package org.apache.accumulo.server.master.recovery;
 
-import java.io.IOException;
-
 import org.apache.accumulo.core.conf.AccumuloConfiguration;
 import org.apache.accumulo.server.fs.VolumeManager;
 import org.apache.hadoop.fs.FileSystem;
@@ -26,9 +24,11 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MapRLogCloser implements LogCloser {
+import java.io.IOException;
 
-  private static final Logger log = LoggerFactory.getLogger(MapRLogCloser.class);
+public class GenericLogCloser implements LogCloser {
+
+  private static final Logger log = LoggerFactory.getLogger(GenericLogCloser.class);
 
   @Override
   public long close(AccumuloConfiguration conf, VolumeManager fs, Path path) throws IOException {

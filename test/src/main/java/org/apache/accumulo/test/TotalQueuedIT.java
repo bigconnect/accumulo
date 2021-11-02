@@ -46,7 +46,6 @@ public class TotalQueuedIT extends ConfigurableMacBase {
   public void configure(MiniAccumuloConfigImpl cfg, Configuration hadoopCoreSite) {
     cfg.setNumTservers(1);
     cfg.setDefaultMemory(cfg.getDefaultMemory() * 2, MemoryUnit.BYTE);
-    cfg.useMiniDFS();
   }
 
   @Override

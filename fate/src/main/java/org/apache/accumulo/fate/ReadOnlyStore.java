@@ -25,94 +25,93 @@ import java.util.List;
 /**
  * This store decorates a TStore to make sure it can not be modified.
  *
- * Unlike relying directly on the ReadOnlyTStore interface, this class will not allow subsequent
- * users to cast back to a mutable TStore successfully.
+ * Unlike relying directly on the ReadOnlyTStore interface, this class will not allow subsequent users to cast back to a
+ * mutable TStore successfully.
  *
  */
 public class ReadOnlyStore<T> implements ReadOnlyTStore<T> {
 
-  private final TStore<T> store;
-
-  /**
-   * @param store
-   *          may not be null
-   */
-  public ReadOnlyStore(TStore<T> store) {
-    requireNonNull(store);
-    this.store = store;
-  }
-
-  @Override
-  public long reserve() {
-    return store.reserve();
-  }
-
-  @Override
-  public void reserve(long tid) {
-    store.reserve(tid);
-  }
-
-  @Override
-  public void unreserve(long tid, long deferTime) {
-    store.unreserve(tid, deferTime);
-  }
-
-  /**
-   * Decorates a Repo to make sure it is treated as a ReadOnlyRepo.
-   *
-   * Similar to ReadOnlyStore, won't allow subsequent user to cast a ReadOnlyRepo back to a mutable
-   * Repo.
-   */
-  protected static class ReadOnlyRepoWrapper<X> implements ReadOnlyRepo<X> {
-    private final Repo<X> repo;
+    private final TStore<T> store;
 
     /**
-     * @param repo
-     *          may not be null
+     * @param store
+     *            may not be null
      */
-    public ReadOnlyRepoWrapper(Repo<X> repo) {
-      requireNonNull(repo);
-      this.repo = repo;
+    public ReadOnlyStore(TStore<T> store) {
+        requireNonNull(store);
+        this.store = store;
     }
 
     @Override
-    public long isReady(long tid, X environment) throws Exception {
-      return repo.isReady(tid, environment);
+    public long reserve() {
+        return store.reserve();
     }
 
     @Override
-    public String getDescription() {
-      return repo.getDescription();
+    public void reserve(long tid) {
+        store.reserve(tid);
     }
-  }
 
-  @Override
-  public ReadOnlyRepo<T> top(long tid) {
-    return new ReadOnlyRepoWrapper<>(store.top(tid));
-  }
+    @Override
+    public void unreserve(long tid, long deferTime) {
+        store.unreserve(tid, deferTime);
+    }
 
-  @Override
-  public TStatus getStatus(long tid) {
-    return store.getStatus(tid);
-  }
+    /**
+     * Decorates a Repo to make sure it is treated as a ReadOnlyRepo.
+     *
+     * Similar to ReadOnlyStore, won't allow subsequent user to cast a ReadOnlyRepo back to a mutable Repo.
+     */
+    protected static class ReadOnlyRepoWrapper<X> implements ReadOnlyRepo<X> {
+        private final Repo<X> repo;
 
-  @Override
-  public TStatus waitForStatusChange(long tid, EnumSet<TStatus> expected) {
-    return store.waitForStatusChange(tid, expected);
-  }
+        /**
+         * @param repo
+         *            may not be null
+         */
+        public ReadOnlyRepoWrapper(Repo<X> repo) {
+            requireNonNull(repo);
+            this.repo = repo;
+        }
 
-  @Override
-  public Serializable getProperty(long tid, String prop) {
-    return store.getProperty(tid, prop);
-  }
+        @Override
+        public long isReady(long tid, X environment) throws Exception {
+            return repo.isReady(tid, environment);
+        }
 
-  @Override
-  public List<Long> list() {
-    return store.list();
-  }
+        @Override
+        public String getDescription() {
+            return repo.getDescription();
+        }
+    }
 
-  @Override
-  public List<ReadOnlyRepo<T>> getStack(long tid) {
-    return store.getStack(tid);
-  }
+    @Override
+    public ReadOnlyRepo<T> top(long tid) {
+        return new ReadOnlyRepoWrapper<>(store.top(tid));
+    }
+
+    @Override
+    public TStatus getStatus(long tid) {
+        return store.getStatus(tid);
+    }
+
+    @Override
+    public TStatus waitForStatusChange(long tid, EnumSet<TStatus> expected) {
+        return store.waitForStatusChange(tid, expected);
+    }
+
+    @Override
+    public Serializable getProperty(long tid, String prop) {
+        return store.getProperty(tid, prop);
+    }
+
+    @Override
+    public List<Long> list() {
+        return store.list();
+    }
+
+    @Override
+    public List<ReadOnlyRepo<T>> getStack(long tid) {
+        return store.getStack(tid);
+    }
 }
