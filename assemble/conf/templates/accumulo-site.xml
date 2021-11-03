@@ -140,45 +140,6 @@ ${mvnProjBaseDir}
       <!-- ZooKeeper requirements -->
       $ZOOKEEPER_HOME/zookeeper[^.].*.jar,
       $ZOOKEEPER_HOME/lib/zookeeper[^.].*.jar,
-      <!-- Common Hadoop requirements -->
-      $HADOOP_CONF_DIR,
-      <!-- Hadoop 2 requirements -->
-      $HADOOP_PREFIX/share/hadoop/common/[^.].*.jar,
-      $HADOOP_PREFIX/share/hadoop/common/lib/(?!slf4j)[^.].*.jar,
-      $HADOOP_PREFIX/share/hadoop/hdfs/[^.].*.jar,
-      $HADOOP_PREFIX/share/hadoop/mapreduce/[^.].*.jar,
-      $HADOOP_PREFIX/share/hadoop/yarn/[^.].*.jar,
-      $HADOOP_PREFIX/share/hadoop/yarn/lib/jersey.*.jar,
-      <!-- End Hadoop 2 requirements -->
-      <!-- HDP 2.0 requirements -->
-      /usr/lib/hadoop/[^.].*.jar,
-      /usr/lib/hadoop/lib/[^.].*.jar,
-      /usr/lib/hadoop-hdfs/[^.].*.jar,
-      /usr/lib/hadoop-mapreduce/[^.].*.jar,
-      /usr/lib/hadoop-yarn/[^.].*.jar,
-      /usr/lib/hadoop-yarn/lib/jersey.*.jar,
-      <!-- End HDP 2.0 requirements -->
-      <!-- HDP 2.2 requirements -->
-      /usr/hdp/current/hadoop-client/[^.].*.jar,
-      /usr/hdp/current/hadoop-client/lib/(?!slf4j)[^.].*.jar,
-      /usr/hdp/current/hadoop-hdfs-client/[^.].*.jar,
-      /usr/hdp/current/hadoop-mapreduce-client/[^.].*.jar,
-      /usr/hdp/current/hadoop-yarn-client/[^.].*.jar,
-      /usr/hdp/current/hadoop-yarn-client/lib/jersey.*.jar,
-      /usr/hdp/current/hive-client/lib/hive-accumulo-handler.jar
-      <!-- End HDP 2.2 requirements -->
-      <!-- IOP 4.1 requirements -->
-      /usr/iop/current/hadoop-client/[^.].*.jar,
-      /usr/iop/current/hadoop-client/lib/(?!slf4j)[^.].*.jar,
-      /usr/iop/current/hadoop-hdfs-client/[^.].*.jar,
-      /usr/iop/current/hadoop-mapreduce-client/[^.].*.jar,
-      /usr/iop/current/hadoop-yarn-client/[^.].*.jar,
-      /usr/iop/current/hadoop-yarn-client/lib/jersey.*.jar,
-      /usr/iop/current/hive-client/lib/hive-accumulo-handler.jar
-      <!-- End IOP 4.1 requirements -->
-      <!-- Hadoop 3 requirements -->
-      $HADOOP_PREFIX/share/hadoop/client/[^.].*.jar,
-      <!-- End Hadoop 3 requirements -->
     </value>
     <description>Classpaths that accumulo checks for updates and class files.</description>
   </property>

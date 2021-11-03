@@ -27,15 +27,6 @@
 ### you may want to use smaller values, especially when running everything
 ### on a single machine.
 ###
-if [[ -z $HADOOP_HOME ]] ; then
-   test -z "$HADOOP_PREFIX"      && export HADOOP_PREFIX=/path/to/hadoop
-else
-   HADOOP_PREFIX="$HADOOP_HOME"
-   unset HADOOP_HOME
-fi
-
-# hadoop-2.0:
-test -z "$HADOOP_CONF_DIR"       && export HADOOP_CONF_DIR="$HADOOP_PREFIX/etc/hadoop"
 
 test -z "$JAVA_HOME"             && export JAVA_HOME=/path/to/java
 test -z "$ZOOKEEPER_HOME"        && export ZOOKEEPER_HOME=/path/to/zookeeper
@@ -54,12 +45,6 @@ test -z "$ACCUMULO_OTHER_OPTS"   && export ACCUMULO_OTHER_OPTS="${otherHigh_othe
 test -z "${ACCUMULO_PID_DIR}"    && export ACCUMULO_PID_DIR="${ACCUMULO_HOME}/run"
 # what do when the JVM runs out of heap memory
 export ACCUMULO_KILL_CMD='kill -9 %p'
-
-### Optionally look for hadoop and accumulo native libraries for your
-### platform in additional directories. (Use DYLD_LIBRARY_PATH on Mac OS X.)
-### May not be necessary for Hadoop 2.x or using an RPM that installs to
-### the correct system library directory.
-# export LD_LIBRARY_PATH=${HADOOP_PREFIX}/lib/native/${PLATFORM}:${LD_LIBRARY_PATH}
 
 # Should the monitor bind to all network interfaces -- default: false
 # export ACCUMULO_MONITOR_BIND_ALL="true"

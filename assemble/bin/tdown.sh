@@ -27,7 +27,6 @@ bin="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 . "$bin"/config.sh
 
-HADOOP_CMD=$HADOOP_PREFIX/bin/hadoop
 SLAVES=$ACCUMULO_CONF_DIR/slaves
 SLAVE_HOSTS=$(egrep -v '(^#|^\s*$)' "${SLAVES}")
 

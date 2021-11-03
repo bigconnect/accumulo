@@ -65,10 +65,4 @@ public class SslIT extends ConfigurableMacBase {
         new Path(getCluster().getConfig().getDir().getAbsolutePath(), "tmp"), "root",
         getUniqueNames(1)[0], this.getClass().getName(), testName.getMethodName());
   }
-
-  @Test
-  public void mapReduce() throws Exception {
-    MapReduceIT.runTest(getConnector(), getCluster());
-  }
-
 }

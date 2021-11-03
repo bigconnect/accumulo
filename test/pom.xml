@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.accumulo</groupId>
     <artifactId>accumulo-project</artifactId>
-    <version>1.10.1</version>
+    <version>1.20.1</version>
   </parent>
   <artifactId>accumulo-test</artifactId>
   <name>Apache Accumulo Testing</name>
@@ -77,10 +77,6 @@
     <dependency>
       <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.accumulo</groupId>
-      <artifactId>accumulo-examples-simple</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.accumulo</groupId>

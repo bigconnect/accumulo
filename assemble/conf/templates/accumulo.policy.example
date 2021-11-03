@@ -33,56 +33,6 @@ grant codeBase "file:${org.apache.accumulo.core.home.dir}/src/examples/target/cl
   permission java.security.AllPermission;
 };
 
-grant codebase "file:${hadoop.home.dir}/*" {
-  permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
-  permission java.lang.RuntimePermission "shutdownHooks"; // hadoop libs use executables to discover usernames, groups, etc.
-  permission java.lang.RuntimePermission "loadLibrary.*";
-  permission java.io.FilePermission "<<ALL FILES>>", "read, execute";
-  permission java.io.FilePermission "/tmp", "write, delete";
-  permission java.io.FilePermission "/tmp/-", "write, delete";
-  permission java.io.FilePermission "/", "write";
-  permission java.net.SocketPermission "*", "connect, resolve";
-  permission java.util.PropertyPermission "java.library.path", "read";
-  permission java.util.PropertyPermission "user.dir", "read";
-  permission java.util.PropertyPermission "org.apache.commons.logging.*", "read";
-  permission java.util.PropertyPermission "entityExpansionLimit", "read";
-  permission java.util.PropertyPermission "maxOccurLimit", "read";
-  permission java.util.PropertyPermission "os.name", "read";
-};
-
-grant codebase "file:${hadoop.home.dir}/lib/*" {
-  // monitor's jetty web service
-  permission java.security.SecurityPermission "configurationPermission";
-  permission java.security.SecurityPermission "tablesPermission";
-  permission java.security.SecurityPermission "zookeeperWriterPermission";
-  permission java.security.SecurityPermission "tableManagerPermission";
-  permission java.security.SecurityPermission "transportPoolPermission";
-  permission java.security.SecurityPermission "systemCredentialsPermission";
-  permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
-  // need to accept web requests, and talk to job tracker, name node, etc.
-  permission java.net.SocketPermission "*", "accept, listen, resolve, connect, resolve";
-  permission java.lang.RuntimePermission "getenv.*";
-  permission java.lang.RuntimePermission "loadLibrary.*";
-  permission java.util.PropertyPermission "org.mortbay.*", "read";
-  permission java.util.PropertyPermission "VERBOSE", "read";
-  permission java.util.PropertyPermission "IGNORED", "read";
-  permission java.util.PropertyPermission "ISO_8859_1", "read";
-  permission java.util.PropertyPermission "org.apache.commons.logging.*", "read";
-  permission java.util.PropertyPermission "accumulo.*", "read";
-  permission java.util.PropertyPermission "org.jfree.*", "read";
-  permission java.util.PropertyPermission "elementAttributeLimit", "read";
-  permission java.util.PropertyPermission "entityExpansionLimit", "read";
-  permission java.util.PropertyPermission "maxOccurLimit", "read";
-  // some resources come out of accumulo jars
-  permission java.lang.RuntimePermission "getClassLoader";
-  permission java.io.FilePermission "${org.apache.accumulo.core.home.dir}/lib/*", "read";
-  permission java.io.FilePermission "${org.apache.accumulo.core.home.dir}/src/-", "read";
-  permission java.io.FilePermission "${hadoop.home.dir}/lib/*", "read";
-  // images are cached in /tmp
-  permission java.io.FilePermission "/tmp/*", "read, write";
-  permission java.io.FilePermission "/", "write";
-};
-
 grant codebase "file:${zookeeper.home.dir}/*" {
   permission java.net.SocketPermission "*", "connect, resolve";
   permission java.util.PropertyPermission "user.*", "read";

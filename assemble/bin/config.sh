@@ -25,14 +25,12 @@
 #  ACCUMULO_HOME      Home directory for Accumulo
 #  ACCUMULO_LOG_DIR   Directory for Accumulo daemon logs
 #  ACCUMULO_VERSION   Accumulo version name
-#  HADOOP_PREFIX      Prefix to the home dir for hadoop.
 #
 # Iff ACCUMULO_VERIFY_ONLY is not set, this script will
 #   * Ensure the existence of ACCUMULO_LOG_DIR on the current host
 #
 # Values always set by script.
 #  MALLOC_ARENA_MAX   To work around a memory management bug (see ACCUMULO-847)
-#  HADOOP_HOME        Home dir for hadoop.  TODO fix this.
 #
 # Values set by script if certain files exist
 # ACCUMULO_JAAS_CONF  Location of jaas.conf file. Needed by JAAS for things like Kerberos based logins
@@ -90,24 +88,6 @@ fi
 
 export ACCUMULO_LOG_DIR
 
-if [[ -z "$HADOOP_PREFIX" ]]
-then
-   HADOOP_PREFIX="$(which hadoop)"
-   if [[ -z "$HADOOP_PREFIX" ]]
-   then
-      echo "You must set HADOOP_PREFIX"
-      exit 1
-   fi
-   HADOOP_PREFIX=$(dirname "$HADOOP_PREFIX")
-   HADOOP_PREFIX=$(dirname "$HADOOP_PREFIX")
-fi
-if [[ ! -d "$HADOOP_PREFIX" ]]
-then
-   echo "HADOOP_PREFIX, which has a value of $HADOOP_PREFIX, is not a directory."
-   exit 1
-fi
-export HADOOP_PREFIX
-
 ACCUMULO_ENABLE_NUMACTL=${ACCUMULO_ENABLE_NUMACTL:-"true"}
 ACCUMULO_NUMACTL_OPTIONS=${ACCUMULO_NUMACTL_OPTIONS:-"--interleave=all"}
 NUMA=`which numactl 2>/dev/null`
@@ -135,9 +115,6 @@ if [[ $NUM_TSERVERS -gt 1 && -n $TSERVER_NUMA_OPTIONS && ${#TSERVER_NUMA_OPTIONS
    echo "TSERVER_NUMA_OPTIONS is declared, but not the same size as NUM_TSERVERS"
    exit 1
 fi
-
-export HADOOP_HOME=$HADOOP_PREFIX
-export HADOOP_HOME_WARN_SUPPRESS=true
 
 # See HADOOP-7154 and ACCUMULO-847
 export MALLOC_ARENA_MAX=${MALLOC_ARENA_MAX:-1}

@@ -324,7 +324,7 @@ public enum Property {
       PropertyType.TIMEDURATION,
       "The amount of time to wait after requesting a WAL file to be recovered"),
   MASTER_WALOG_CLOSER_IMPLEMETATION("master.walog.closer.implementation",
-      "org.apache.accumulo.server.master.recovery.HadoopLogCloser", PropertyType.CLASSNAME,
+      "org.apache.accumulo.server.master.recovery.GenericLogCloser", PropertyType.CLASSNAME,
       "A class that implements a mechansim to steal write access to a file"),
   MASTER_FATE_METRICS_ENABLED("master.fate.metrics.enabled", "false", PropertyType.BOOLEAN,
       "Enable reporting of FATE metrics in JMX (and logging with Hadoop Metrics2"),

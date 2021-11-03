@@ -45,6 +45,7 @@
         <include>jline:jline</include>
         <include>org.apache.commons:commons-math3</include>
         <include>org.apache.commons:commons-vfs2</include>
+        <include>org.apache.hadoop:hadoop-common</include>
         <include>org.apache.htrace:htrace-core4</include>
         <include>org.apache.htrace:htrace-core</include>
         <include>org.apache.thrift:libthrift</include>
@@ -56,20 +57,7 @@
         <include>org.eclipse.jetty:jetty-util</include>
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-log4j12</include>
-      </includes>
-      <excludes>
-        <exclude>${groupId}:${artifactId}-docs</exclude>
-      </excludes>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>docs</outputDirectory>
-      <directoryMode>0755</directoryMode>
-      <fileMode>0644</fileMode>
-      <useProjectArtifact>false</useProjectArtifact>
-      <outputFileNameMapping>${artifactId}_user_manual.${artifact.extension}</outputFileNameMapping>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <includes>
-        <include>${groupId}:${artifactId}-docs:html:user-manual</include>
+        <include>log4j:log4j</include>
       </includes>
     </dependencySet>
   </dependencySets>
@@ -103,26 +91,6 @@
       <excludes>
         <exclude>*/**</exclude>
       </excludes>
-    </fileSet>
-    <fileSet>
-      <directory>../docs/src/main/resources</directory>
-      <outputDirectory>docs</outputDirectory>
-      <directoryMode>0755</directoryMode>
-      <fileMode>0644</fileMode>
-      <includes>
-        <include>*.html</include>
-        <include>*.css</include>
-        <include>examples/*</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../docs/target</directory>
-      <outputDirectory>docs</outputDirectory>
-      <directoryMode>0755</directoryMode>
-      <fileMode>0644</fileMode>
-      <includes>
-        <include>config.html</include>
-      </includes>
     </fileSet>
     <fileSet>
       <directory>conf</directory>
